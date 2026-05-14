@@ -3,942 +3,1383 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mesa Sonora 3D — Mixagem e Habilidades Musicais</title>
+  <title>Percepção Musical e Mixagem</title>
   <style>
-    :root {
-      --bg: #060914;
-      --panel: rgba(10, 18, 35, 0.82);
-      --panel-strong: rgba(8, 13, 28, 0.94);
-      --line: rgba(255, 255, 255, 0.14);
-      --text: #edf6ff;
-      --muted: #a9bdd4;
-      --cyan: #48d7ff;
-      --blue: #5177ff;
-      --pink: #ff5bc8;
-      --orange: #ffb347;
-      --green: #70ffb2;
-      --red: #ff6a7a;
-      --yellow: #ffe36d;
-      --shadow: 0 22px 70px rgba(0,0,0,.42);
+    :root{
+      --bg1:#050814;
+      --bg2:#0e1630;
+      --bg3:#0d1020;
+      --cyan:#39d4ff;
+      --cyan2:#79ecff;
+      --pink:#ff4fcf;
+      --violet:#9d7bff;
+      --green:#62ffaf;
+      --yellow:#ffd85f;
+      --red:#ff6a7f;
+      --orange:#ffad47;
+      --text:#edf6ff;
+      --muted:#c7d7ec;
+      --panel:rgba(7,12,28,.78);
+      --panelStrong:rgba(8,13,28,.94);
+      --line:rgba(255,255,255,.18);
+      --shadow:0 24px 80px rgba(0,0,0,.48);
     }
 
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      overflow: hidden;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      overflow:hidden;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
       background:
-        radial-gradient(circle at 20% 10%, rgba(72, 215, 255, 0.22), transparent 30%),
-        radial-gradient(circle at 80% 20%, rgba(255, 91, 200, 0.18), transparent 28%),
-        radial-gradient(circle at 50% 100%, rgba(81, 119, 255, 0.28), transparent 36%),
-        var(--bg);
+        radial-gradient(circle at 20% 10%, rgba(57,212,255,.18), transparent 28%),
+        radial-gradient(circle at 80% 15%, rgba(255,79,207,.15), transparent 24%),
+        radial-gradient(circle at 50% 100%, rgba(157,123,255,.18), transparent 35%),
+        linear-gradient(180deg,var(--bg2),var(--bg1) 45%, #04060d 100%);
     }
 
-    button, input { font: inherit; }
-
-    .app {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
+    .app{
+      position:relative;
+      width:100vw;
+      height:100vh;
+      overflow:hidden;
+      perspective:1600px;
     }
 
-    .skyline {
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(to bottom, rgba(6,9,20,0.1) 0%, rgba(6,9,20,0.45) 48%, rgba(6,9,20,0.96) 100%),
-        repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 120px);
-      pointer-events: none;
-    }
-
-    .stars, .stars::before, .stars::after {
-      position: absolute;
-      content: "";
-      inset: -20%;
+    .stars,.stars::before,.stars::after{
+      content:"";
+      position:absolute;
+      inset:-20%;
       background-image:
-        radial-gradient(circle, rgba(255,255,255,.8) 1px, transparent 1.5px),
-        radial-gradient(circle, rgba(72,215,255,.8) 1px, transparent 1.5px);
-      background-size: 160px 140px, 230px 210px;
-      background-position: 0 0, 80px 30px;
-      opacity: .35;
-      animation: drift 30s linear infinite;
+        radial-gradient(circle, rgba(255,255,255,.85) 1px, transparent 1.6px),
+        radial-gradient(circle, rgba(57,212,255,.8) 1px, transparent 1.6px);
+      background-size:180px 180px, 250px 250px;
+      background-position:0 0, 90px 50px;
+      opacity:.22;
+      animation:drift 45s linear infinite;
+      pointer-events:none;
+    }
+    .stars::before{animation-duration:70s;opacity:.14;transform:rotate(8deg)}
+    .stars::after{animation-duration:90s;opacity:.1;transform:rotate(-10deg)}
+    @keyframes drift{to{transform:translate3d(-80px,60px,0)}}
+
+    .topbar{
+      position:absolute;
+      top:16px;
+      left:16px;
+      bottom:16px;
+      z-index:30;
+      display:block;
+      width:340px;
+      max-width:calc(100vw - 32px);
+      margin:0;
     }
 
-    .stars::before { animation-duration: 48s; opacity: .2; transform: rotate(12deg); }
-    .stars::after { animation-duration: 70s; opacity: .14; transform: rotate(-8deg); }
-
-    @keyframes drift { to { transform: translate3d(-90px, 70px, 0); } }
-
-    .hud {
-      position: absolute;
-      top: 18px;
-      left: 18px;
-      z-index: 20;
-      width: min(430px, calc(100vw - 36px));
-      padding: 16px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      backdrop-filter: blur(16px);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
+    .glass{
+      background:var(--panel);
+      border:1px solid var(--line);
+      backdrop-filter:blur(16px);
+      border-radius:24px;
+      box-shadow:var(--shadow);
     }
 
-    .hud h1 {
-      margin: 0 0 6px;
-      font-size: clamp(1.18rem, 2vw, 1.75rem);
-      line-height: 1.08;
-      letter-spacing: -0.03em;
+    .intro{
+      padding:16px 18px 18px;
+      height:100%;
+      overflow:auto;
+    }
+    .intro h1{
+      margin:0 0 6px;
+      font-size:clamp(1.2rem,2.3vw,1.9rem);
+      line-height:1.05;
+      letter-spacing:-.03em;
+    }
+    .intro p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:.95rem;
     }
 
-    .hud p {
-      margin: 0;
-      color: var(--muted);
-      font-size: .94rem;
-      line-height: 1.45;
+    .status{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:8px;
+      margin-top:12px;
+    }
+    .chip{
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+    }
+    .chip b{display:block;font-size:1.02rem}
+    .chip span{display:block;color:var(--muted);font-size:.74rem;margin-top:2px}
+
+    .tools{
+      margin-top:12px;
+      padding:12px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      justify-content:stretch;
+      align-items:stretch;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.045);
+    }
+    .tool-note{
+      flex:1 1 100%;
+      color:#d9e7ff;
+      font-size:.88rem;
+      line-height:1.4;
+      max-width:none;
+      margin:0 0 2px;
     }
 
-    .status {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 12px;
+    .btn{
+      border:none;
+      cursor:pointer;
+      color:white;
+      padding:11px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+      transition:transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .btn:hover{
+      transform:translateY(-1px);
+      background:rgba(255,255,255,.12);
+      box-shadow:0 10px 18px rgba(0,0,0,.25);
+    }
+    .btn.primary{
+      background:linear-gradient(135deg, rgba(57,212,255,.28), rgba(157,123,255,.22));
+    }
+    .btn.success{
+      background:linear-gradient(135deg, rgba(98,255,175,.26), rgba(57,212,255,.18));
+    }
+    .btn.warn{
+      background:linear-gradient(135deg, rgba(255,216,95,.24), rgba(255,79,207,.18));
     }
 
-    .chip {
-      border: 1px solid var(--line);
-      border-radius: 15px;
-      padding: 9px 10px;
-      background: rgba(255,255,255,0.06);
+    .tools .btn{
+      width:100%;
+      justify-self:stretch;
     }
 
-    .chip b {
-      display: block;
-      font-size: 1.05rem;
-      color: white;
+    .studio{
+      position:absolute;
+      inset:0 16px 16px 376px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      pointer-events:none;
+      padding-top:0;
     }
 
-    .chip span {
-      display: block;
-      color: var(--muted);
-      font-size: .72rem;
-      margin-top: 2px;
+    .rig{
+      width:min(1420px, calc(100vw - 32px));
+      height:calc(100vh - 16px);
+      position:relative;
+      transform-style:preserve-3d;
+      pointer-events:auto;
+      display:grid;
+      grid-template-rows:minmax(360px, 54vh) minmax(300px, 360px);
+      gap:12px;
+      align-content:start;
     }
 
-    .controls {
-      position: absolute;
-      right: 18px;
-      top: 18px;
-      z-index: 20;
-      width: min(340px, calc(100vw - 36px));
-      padding: 14px;
-      border-radius: 22px;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      backdrop-filter: blur(16px);
-      box-shadow: var(--shadow);
+    .screen-stage{
+      position:relative;
+      left:auto;
+      top:0;
+      transform:none;
+      width:min(1080px, 94%);
+      height:100%;
+      justify-self:center;
+      align-self:start;
+      transform-style:preserve-3d;
+      z-index:2;
     }
 
-    .controls h2 {
-      margin: 0 0 10px;
-      font-size: 1rem;
-    }
-
-    .controls-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      align-items: center;
-    }
-
-    .key {
-      padding: 9px 7px;
-      text-align: center;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: rgba(255,255,255,.06);
-      color: var(--muted);
-      font-size: .78rem;
-    }
-
-    .key strong {
-      display: block;
-      color: white;
-      font-size: .9rem;
-    }
-
-    .world-wrap {
-      position: absolute;
-      inset: 0;
-      perspective: 1150px;
-      perspective-origin: 50% 35%;
-      overflow: hidden;
-      cursor: grab;
-    }
-
-    .world-wrap:active { cursor: grabbing; }
-
-    .world {
-      --rx: 62deg;
-      --rz: -8deg;
-      --tx: 0px;
-      --ty: 25px;
-      position: absolute;
-      left: 50%;
-      top: 54%;
-      width: 1180px;
-      height: 720px;
-      transform-style: preserve-3d;
-      transform: translate(-50%, -50%) rotateX(var(--rx)) rotateZ(var(--rz)) translate3d(var(--tx), var(--ty), 0);
-      transition: transform .12s linear;
-    }
-
-    .mixer {
-      position: absolute;
-      inset: 0;
-      border-radius: 44px;
+    .screen-shell{
+      position:absolute;
+      inset:0;
+      border-radius:34px;
       background:
-        linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.03)),
-        linear-gradient(90deg, rgba(72,215,255,.06), rgba(255,91,200,.06)),
-        #151b2d;
-      border: 2px solid rgba(255,255,255,.14);
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)),
+        linear-gradient(180deg, #121931, #070c18 75%);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:var(--shadow), inset 0 0 65px rgba(57,212,255,.08);
+      transform:translateZ(60px);
+      overflow:hidden;
+    }
+
+    .screen-shell::before{
+      content:"";
+      position:absolute;
+      left:26px;
+      right:26px;
+      top:-14px;
+      height:14px;
+      border-radius:18px 18px 0 0;
+      background:linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.02));
+    }
+
+    .screen-shell::after{
+      content:"";
+      position:absolute;
+      left:28px;
+      right:28px;
+      bottom:-24px;
+      height:26px;
+      border-radius:0 0 24px 24px;
+      background:#070c15;
+      box-shadow:0 20px 40px rgba(0,0,0,.35);
+    }
+
+    .monitor-inner{
+      position:absolute;
+      inset:14px;
+      border-radius:26px;
+      background:
+        radial-gradient(circle at 80% 10%, rgba(57,212,255,.18), transparent 20%),
+        linear-gradient(180deg, rgba(12,22,46,.98), rgba(6,11,23,.99));
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+
+    .monitor-header{
+      padding:14px 16px 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:space-between;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,0));
+    }
+
+    .monitor-title{
+      min-width:0;
+    }
+    .monitor-title h2{
+      margin:0;
+      font-size:clamp(1.2rem,2vw,2rem);
+      letter-spacing:-.03em;
+      line-height:1.08;
+    }
+    .monitor-title p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:.95rem;
+    }
+
+    .monitor-badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+      max-width:280px;
+    }
+    .badge{
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      font-size:.78rem;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .monitor-body{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:14px;
+      padding:12px 16px;
+      min-height:0;
+    }
+
+    .box{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      border-radius:22px;
+      padding:16px;
+      min-height:0;
+      overflow:auto;
+    }
+    .box h3{
+      margin:0 0 10px;
+      font-size:1rem;
+    }
+    .box p, .box li{
+      color:#d9e7ff;
+      line-height:1.6;
+      font-size:1rem;
+    }
+
+    #monitorText{
+      color:#eef6ff;
+      font-size:1.04rem;
+      line-height:1.62;
+    }
+    .box ul{
+      margin:0;
+      padding-left:18px;
+    }
+
+    .visualizer{
+      height:96px;
+      display:flex;
+      align-items:end;
+      gap:5px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.18);
+      padding:10px;
+      margin-bottom:14px;
+      overflow:hidden;
+    }
+    .bar{
+      flex:1;
+      min-width:4px;
+      height:20%;
+      border-radius:999px 999px 0 0;
+      background:linear-gradient(to top,var(--cyan),var(--pink));
+      animation:bars .9s ease-in-out infinite alternate;
+    }
+    .bar:nth-child(2n){animation-delay:-.2s}
+    .bar:nth-child(3n){animation-delay:-.44s}
+    .bar:nth-child(5n){animation-delay:-.7s}
+    @keyframes bars{from{height:12%}to{height:var(--h,88%)}}
+
+    .challenge{
+      display:none;
+      margin-top:14px;
+    }
+    .challenge.active{display:block}
+    .options{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+    .option{
+      text-align:left;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:white;
+      cursor:pointer;
+    }
+    .option.correct{border-color:rgba(98,255,175,.8);background:rgba(98,255,175,.15)}
+    .option.wrong{border-color:rgba(255,106,127,.8);background:rgba(255,106,127,.14)}
+    .feedback{
+      min-height:24px;
+      margin-top:10px;
+      color:var(--muted);
+    }
+
+    .monitor-footer{
+      padding:10px 16px 12px;
+      border-top:1px solid rgba(255,255,255,.08);
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+      background:linear-gradient(0deg, rgba(255,255,255,.03), rgba(255,255,255,0));
+    }
+    .footer-note{
+      color:var(--muted);
+      font-size:.88rem;
+    }
+
+    .screen-stand{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:-82px;
+      width:170px;
+      height:120px;
+      z-index:1;
+      transform-style:preserve-3d;
+      pointer-events:none;
+    }
+    .screen-stand::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:0;
+      width:56px;
+      height:96px;
+      transform:translateX(-50%) translateZ(20px);
+      border-radius:16px;
+      background:linear-gradient(180deg,#171d31,#090d19);
+      box-shadow:0 18px 24px rgba(0,0,0,.35);
+    }
+    .screen-stand::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      bottom:0;
+      width:170px;
+      height:36px;
+      transform:translateX(-50%) translateZ(10px);
+      border-radius:999px;
+      background:linear-gradient(180deg,#111727,#060a14);
+      box-shadow:0 20px 30px rgba(0,0,0,.35);
+    }
+
+    .console{
+      position:relative;
+      left:auto;
+      bottom:auto;
+      transform:rotateX(0deg);
+      transform-origin:center top;
+      transform-style:preserve-3d;
+      width:min(1320px, 96%);
+      height:350px;
+      z-index:5;
+      justify-self:center;
+      pointer-events:auto;
+    }
+
+    .desk{
+      position:absolute;
+      inset:0;
+      border-radius:34px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.02)),
+        linear-gradient(180deg,#1a2138,#0a0f1d 78%);
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:var(--shadow), inset 0 0 70px rgba(57,212,255,.06);
+      transform-style:preserve-3d;
+      overflow:visible;
+    }
+    .desk::before{
+      content:"";
+      position:absolute;
+      inset:14px;
+      border-radius:28px;
+      border:1px solid rgba(255,255,255,.05);
+      pointer-events:none;
+      box-shadow:inset 0 0 60px rgba(255,255,255,.03);
+    }
+    .desk::after{
+      content:"";
+      position:absolute;
+      left:22px;
+      right:22px;
+      bottom:-28px;
+      height:34px;
+      border-radius:0 0 28px 28px;
+      background:linear-gradient(180deg,#0d1221,#06090f);
+      box-shadow:0 18px 36px rgba(0,0,0,.42);
+      transform:translateZ(-16px);
+    }
+
+    .channel-row{
+      position:absolute;
+      inset:14px;
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:10px;
+      transform-style:preserve-3d;
+    }
+
+    .channel{
+      position:relative;
+      border-radius:24px;
+      padding:10px 8px 12px;
+      cursor:pointer;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03)),
+        rgba(255,255,255,.02);
+      border:1px solid rgba(255,255,255,.08);
+      transform-style:preserve-3d;
       box-shadow:
-        inset 0 0 90px rgba(72,215,255,.08),
-        0 90px 120px rgba(0,0,0,.55);
-      transform-style: preserve-3d;
-      overflow: visible;
-    }
-
-    .mixer::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 44px;
-      background-image:
-        linear-gradient(90deg, transparent 0 8.2%, rgba(255,255,255,.06) 8.2% 8.5%, transparent 8.5% 16.7%),
-        linear-gradient(0deg, rgba(255,255,255,.035), transparent 38%);
-      background-size: 140px 100%, 100% 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    .mixer::after {
-      content: "";
-      position: absolute;
-      left: 18px;
-      right: 18px;
-      bottom: -36px;
-      height: 42px;
-      border-radius: 0 0 36px 36px;
-      background: linear-gradient(180deg, #0d1220, #070b15);
-      transform: translateZ(-10px);
-      filter: blur(0.2px);
-      box-shadow: 0 20px 40px rgba(0,0,0,.45);
-      z-index: -1;
-    }
-
-    .mixer-side-left,
-    .mixer-side-right {
-      position: absolute;
-      top: 42px;
-      bottom: 42px;
-      width: 36px;
-      background: linear-gradient(180deg, #101727, #070b15);
-      opacity: .9;
-      transform: translateZ(-12px);
-      z-index: -1;
-      filter: brightness(.9);
-    }
-
-    .mixer-side-left {
-      left: -22px;
-      border-radius: 32px 0 0 32px;
-      box-shadow: -12px 16px 35px rgba(0,0,0,.35);
-    }
-
-    .mixer-side-right {
-      right: -22px;
-      border-radius: 0 32px 32px 0;
-      box-shadow: 12px 16px 35px rgba(0,0,0,.35);
-    }
-
-    .channel {
-      position: absolute;
-      top: 78px;
-      bottom: 72px;
-      width: 112px;
-      border-radius: 26px;
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.08);
-      transform: translateZ(10px);
-      box-shadow:
-        inset 0 8px 18px rgba(255,255,255,.04),
+        inset 0 10px 16px rgba(255,255,255,.04),
         inset 0 -10px 16px rgba(0,0,0,.28),
-        0 16px 24px rgba(0,0,0,.28);
-      z-index: 1;
+        0 16px 24px rgba(0,0,0,.26);
+      transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .channel:hover{
+      border-color:rgba(57,212,255,.46);
+      box-shadow:
+        inset 0 10px 16px rgba(255,255,255,.05),
+        inset 0 -10px 16px rgba(0,0,0,.28),
+        0 16px 28px rgba(0,0,0,.28),
+        0 0 0 2px rgba(57,212,255,.12);
     }
 
-    .channel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: 26px;
-      background: linear-gradient(90deg, rgba(255,255,255,.06), transparent 20%, transparent 80%, rgba(0,0,0,.18));
-      transform: translateZ(8px);
-      pointer-events: none;
+    .channel:focus-visible{
+      outline:3px solid #ffffff;
+      outline-offset:4px;
     }
 
-    .channel::after {
-      content: "";
-      position: absolute;
-      left: 8px;
-      right: 8px;
-      bottom: -10px;
-      height: 14px;
-      border-radius: 0 0 20px 20px;
-      background: #0c1020;
-      box-shadow: 0 10px 15px rgba(0,0,0,.25);
-    }
-
-    .channel:nth-of-type(1) { left: 66px; }
-    .channel:nth-of-type(2) { left: 202px; }
-    .channel:nth-of-type(3) { left: 338px; }
-    .channel:nth-of-type(4) { left: 474px; }
-    .channel:nth-of-type(5) { left: 610px; }
-    .channel:nth-of-type(6) { left: 746px; }
-    .channel:nth-of-type(7) { left: 882px; }
-    .channel:nth-of-type(8) { left: 1018px; }
-
-    .knob {
-      position: absolute;
-      left: 50%;
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      transform: translateX(-50%) translateZ(18px);
+    .channel.active{
+      transform:translateY(-8px);
+      border-color:rgba(98,255,175,.78);
       background:
-        radial-gradient(circle at 35% 30%, rgba(255,255,255,.75), transparent 18%),
-        conic-gradient(from -45deg, rgba(72,215,255,.85), rgba(255,91,200,.85), rgba(255,179,71,.85), rgba(72,215,255,.85));
+        linear-gradient(180deg, rgba(98,255,175,.13), rgba(57,212,255,.045)),
+        rgba(255,255,255,.035);
       box-shadow:
-        inset 0 -10px 16px rgba(0,0,0,.35),
-        inset 0 8px 10px rgba(255,255,255,.08),
-        0 10px 22px rgba(0,0,0,.35);
+        inset 0 10px 16px rgba(255,255,255,.06),
+        inset 0 -10px 16px rgba(0,0,0,.28),
+        0 20px 34px rgba(0,0,0,.34),
+        0 0 0 2px rgba(98,255,175,.22),
+        0 0 30px rgba(98,255,175,.22);
     }
 
-    .knob::before {
-      content: "";
-      position: absolute;
-      inset: auto 6px -8px 6px;
-      height: 14px;
-      border-radius: 50%;
-      background: rgba(0,0,0,.35);
-      filter: blur(2px);
+    .ch-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .ch-label{
+      min-width:0;
+    }
+    .ch-label b{
+      display:block;
+      font-size:.9rem;
+      line-height:1.15;
+      color:#ffffff;
+      text-shadow:0 1px 2px rgba(0,0,0,.55);
+    }
+    .ch-label span{
+      display:block;
+      color:#d9e7ff;
+      font-size:.72rem;
+      margin-top:3px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
     }
 
-    .knob::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 8px;
-      width: 4px;
-      height: 16px;
-      border-radius: 4px;
-      background: white;
-      transform: translateX(-50%);
+    .tiny-leds{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .led{
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:#24314f;
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:inset 0 2px 2px rgba(255,255,255,.08);
+    }
+    .led.on{
+      background:var(--green);
+      box-shadow:0 0 12px var(--green), inset 0 0 4px rgba(255,255,255,.4);
     }
 
-    .k1 { top: 42px; }
-    .k2 { top: 116px; }
-    .k3 { top: 190px; }
-
-    .meter {
-      position: absolute;
-      top: 284px;
-      left: 50%;
-      transform: translateX(-50%) translateZ(12px);
-      width: 20px;
-      height: 120px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.14);
-      overflow: hidden;
-      background: rgba(0,0,0,.38);
-      box-shadow: inset 0 3px 8px rgba(0,0,0,.45), 0 8px 18px rgba(0,0,0,.25);
+    .knob-bank{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:6px 6px;
+      margin-bottom:8px;
+    }
+    .knob-wrap{
+      display:grid;
+      place-items:center;
+      gap:5px;
     }
 
-    .meter i {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 65%;
-      background: linear-gradient(to top, var(--green), var(--yellow), var(--red));
-      animation: meter 1.3s ease-in-out infinite alternate;
+    .audio-control{
+      border:0;
+      padding:0;
+      background:transparent;
+      color:inherit;
+      cursor:pointer;
+      border-radius:14px;
     }
 
-    .channel:nth-of-type(2n) .meter i { animation-delay: -.45s; height: 48%; }
-    .channel:nth-of-type(3n) .meter i { animation-delay: -.8s; height: 76%; }
-
-    @keyframes meter { from { height: 28%; } to { height: 86%; } }
-
-    .fader {
-      position: absolute;
-      left: 50%;
-      bottom: 48px;
-      transform: translateX(-50%) translateZ(10px);
-      width: 16px;
-      height: 170px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(255,255,255,.05));
-      border: 1px solid rgba(255,255,255,.12);
-      box-shadow: inset 0 2px 6px rgba(255,255,255,.04), 0 8px 18px rgba(0,0,0,.25);
+    .audio-control:focus-visible{
+      outline:3px solid #fff;
+      outline-offset:3px;
     }
 
-    .fader::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 0;
-      bottom: 0;
-      width: 6px;
-      transform: translateX(-50%);
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
+    .audio-control:hover .knob{
+      filter:brightness(1.12);
+      transform:rotate(var(--rot, 0deg)) translateY(-1px);
     }
-
-    .fader::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: var(--pos, 80px);
-      transform: translate(-50%, -50%) translateZ(12px);
-      width: 66px;
-      height: 28px;
-      border-radius: 11px;
-      background: linear-gradient(180deg, #ffffff, #9fb3ca);
-      box-shadow:
-        inset 0 1px 2px rgba(255,255,255,.55),
-        0 10px 20px rgba(0,0,0,.4);
-    }
-
-    .channel:nth-of-type(2) .fader { --pos: 55px; }
-    .channel:nth-of-type(3) .fader { --pos: 105px; }
-    .channel:nth-of-type(4) .fader { --pos: 72px; }
-    .channel:nth-of-type(5) .fader { --pos: 128px; }
-    .channel:nth-of-type(6) .fader { --pos: 66px; }
-    .channel:nth-of-type(7) .fader { --pos: 96px; }
-    .channel:nth-of-type(8) .fader { --pos: 45px; }
-
-    .station {
-      position: absolute;
-      width: 140px;
-      height: 112px;
-      transform-style: preserve-3d;
-      transform: translateZ(62px);
-      cursor: pointer;
-      filter: drop-shadow(0 18px 28px rgba(0,0,0,.45));
-      z-index: 8;
-    }
-
-    .station .base {
-      position: absolute;
-      inset: 0;
-      border-radius: 24px;
-      background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.04)), var(--c, var(--cyan));
-      opacity: .95;
-      border: 1px solid rgba(255,255,255,.23);
-      box-shadow: inset 0 0 32px rgba(255,255,255,.12);
-      transform: translateZ(16px);
-    }
-
-    .station .base::before {
-      content: "";
-      position: absolute;
-      left: 10px;
-      right: 10px;
-      bottom: -14px;
-      height: 18px;
-      border-radius: 0 0 18px 18px;
-      background: rgba(0,0,0,.35);
-      transform: translateZ(-6px);
-    }
-
-    .station .base::after {
-      content: "";
-      position: absolute;
-      top: 8px;
-      bottom: 8px;
-      right: -10px;
-      width: 12px;
-      border-radius: 0 16px 16px 0;
-      background: rgba(0,0,0,.18);
-    }
-
-    .station .mural {
-      position: absolute;
-      left: 14px;
-      right: 14px;
-      bottom: 92px;
-      height: 96px;
-      padding: 12px 10px;
-      border-radius: 18px;
-      transform-origin: bottom center;
-      transform: rotateX(-78deg) translateZ(22px);
-      background: rgba(2, 6, 18, .9);
-      border: 1px solid rgba(255,255,255,.22);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      font-size: .78rem;
-      line-height: 1.15;
-      letter-spacing: .01em;
-      box-shadow:
-        0 12px 22px rgba(0,0,0,.35),
-        inset 0 1px 0 rgba(255,255,255,.08);
-    }
-
-    .station .mural::after {
-      content: "";
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: -8px;
-      height: 8px;
-      border-radius: 0 0 12px 12px;
-      background: rgba(0,0,0,.45);
-      transform: translateZ(-8px);
-    }
-
-    .station .beacon {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      transform: translate(-50%, -50%) translateZ(70px);
-      background: white;
-      box-shadow: 0 0 20px white, 0 0 55px var(--c, var(--cyan));
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: translate(-50%, -50%) translateZ(70px) scale(.72); opacity: .66; }
-      50% { transform: translate(-50%, -50%) translateZ(70px) scale(1.2); opacity: 1; }
-    }
-
-    .station.done .base { filter: saturate(.6); opacity: .6; }
-    .station.done .beacon { background: var(--green); box-shadow: 0 0 28px var(--green); }
-
-    .s-auditivas { left: 76px; top: 78px; --c: #48d7ff; }
-    .s-cognitivas { left: 348px; top: 54px; --c: #ff5bc8; }
-    .s-tecnicas { left: 656px; top: 72px; --c: #ffb347; }
-    .s-musicalidade { left: 948px; top: 126px; --c: #70ffb2; }
-    .s-performance { left: 160px; top: 486px; --c: #9c7cff; }
-    .s-aprendizagem { left: 512px; top: 504px; --c: #ffe36d; color: #10131d; }
-    .s-vida { left: 850px; top: 470px; --c: #ff6a7a; }
-
-    .avatar {
-      position: absolute;
-      width: 38px;
-      height: 38px;
-      left: 560px;
-      top: 342px;
-      transform: translateZ(102px);
-      border-radius: 50%;
+    .knob{
+      width:34px;
+      height:34px;
+      transform:rotate(var(--rot, 0deg));
+      transition:transform .18s ease, filter .18s ease;
+      border-radius:50%;
+      position:relative;
       background:
-        radial-gradient(circle at 35% 30%, white, transparent 16%),
-        linear-gradient(135deg, var(--cyan), var(--pink));
-      border: 3px solid rgba(255,255,255,.85);
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,.85), transparent 16%),
+        conic-gradient(from -50deg, var(--cyan), var(--pink), var(--orange), var(--cyan));
       box-shadow:
-        0 0 28px rgba(72,215,255,.9),
-        0 20px 36px rgba(0,0,0,.45);
-      transition: left .12s linear, top .12s linear;
-      z-index: 12;
+        inset 0 -8px 12px rgba(0,0,0,.32),
+        inset 0 5px 8px rgba(255,255,255,.1),
+        0 10px 18px rgba(0,0,0,.28);
+    }
+    .knob::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:5px;
+      width:3px;
+      height:10px;
+      border-radius:4px;
+      background:white;
+      transform:translateX(-50%);
+    }
+    .knob-wrap span{
+      color:#d9e7ff;
+      font-size:.62rem;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      font-weight:800;
+      text-align:center;
+      line-height:1.05;
     }
 
-    .avatar::before {
-      content: "";
-      position: absolute;
-      left: 4px;
-      right: -4px;
-      bottom: -8px;
-      height: 12px;
-      border-radius: 50%;
-      background: rgba(0,0,0,.28);
-      filter: blur(3px);
+    .meter{
+      position:relative;
+      width:16px;
+      height:82px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.32);
+      overflow:hidden;
+      box-shadow:inset 0 2px 8px rgba(0,0,0,.4);
+    }
+    .meter-fill{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      height:2%;
+      background:linear-gradient(to top,var(--green),var(--yellow),var(--red));
+      transition:height .055s linear;
     }
 
-    .avatar::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 86px;
-      height: 86px;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      border: 1px solid rgba(72,215,255,.35);
-      animation: scan 1.8s ease-in-out infinite;
+    .meter::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        repeating-linear-gradient(
+          to top,
+          rgba(0,0,0,.22) 0 8px,
+          rgba(255,255,255,.08) 8px 9px
+        );
+      pointer-events:none;
     }
 
-    @keyframes scan {
-      0%, 100% { transform: translate(-50%, -50%) scale(.75); opacity: .4; }
-      50% { transform: translate(-50%, -50%) scale(1.05); opacity: .8; }
+    .channel-center{
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      align-items:flex-end;
+      margin:6px 0 8px;
     }
 
-    .cables {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      opacity: .42;
-      z-index: 2;
+    .mini-buttons{
+      display:grid;
+      gap:10px;
+      align-content:center;
+    }
+    .mini-btn{
+      padding:7px 0;
+      min-width:46px;
+      border-radius:13px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.055);
+      color:#cbdaf0;
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      cursor:pointer;
+    }
+    .mini-btn.solo{
+      min-width:66px;
+      min-height:38px;
+      padding:9px 8px;
+      border-radius:16px;
+      color:#06101a;
+      font-weight:900;
+      font-size:.86rem;
+      letter-spacing:.08em;
+      background:linear-gradient(135deg, #79ecff, #ff8cdf);
+      border-color:rgba(255,255,255,.45);
+      box-shadow:0 10px 18px rgba(0,0,0,.28), 0 0 18px rgba(57,212,255,.22);
+    }
+    .mini-btn.solo-label{
+      display:grid;
+      place-items:center;
+      pointer-events:none;
+    }
+    .channel.active .mini-btn.solo{
+      color:#031019;
+      background:linear-gradient(135deg, #62ffaf, #79ecff);
+      border-color:rgba(98,255,175,.9);
+      box-shadow:0 0 0 3px rgba(98,255,175,.22), 0 0 26px rgba(98,255,175,.36), 0 12px 20px rgba(0,0,0,.32);
+    }
+    .channel.active .mini-btn.solo::after{
+      content:' Selecionado';
+      font-weight:800;
     }
 
-    .cable {
-      position: absolute;
-      height: 8px;
-      border-radius: 999px;
-      background: linear-gradient(90deg, rgba(72,215,255,.8), rgba(255,91,200,.8));
-      transform-origin: left center;
-      box-shadow: 0 0 18px rgba(72,215,255,.22), 0 8px 16px rgba(0,0,0,.25);
+    .test-open{
+      display:grid;
+      place-items:center;
+      min-width:66px;
+      min-height:38px;
+      padding:7px 6px;
+      line-height:1.05;
+      color:#ffffff;
+      font-weight:800;
+      background:linear-gradient(135deg, rgba(255,216,95,.26), rgba(255,79,207,.16));
+      border-color:rgba(255,255,255,.22);
+      box-shadow:0 8px 14px rgba(0,0,0,.24);
     }
 
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 40;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      background: rgba(0,0,0,.48);
-      backdrop-filter: blur(12px);
+    .test-open:hover{
+      filter:brightness(1.08);
+      transform:translateY(-1px);
     }
 
-    .modal.active { display: flex; }
-
-    .card {
-      width: min(820px, 100%);
-      max-height: min(760px, calc(100vh - 36px));
-      overflow: auto;
-      border-radius: 28px;
-      border: 1px solid rgba(255,255,255,.16);
-      background: var(--panel-strong);
-      box-shadow: 0 30px 100px rgba(0,0,0,.55);
+    .fader-zone{
+      display:grid;
+      place-items:center;
+      margin-top:0;
+      min-height:112px;
+      overflow:visible;
     }
 
-    .card-head {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      justify-content: space-between;
-      padding: 20px 20px 12px;
-      background: linear-gradient(180deg, rgba(8,13,28,.98), rgba(8,13,28,.88));
-      border-bottom: 1px solid rgba(255,255,255,.08);
+    .volume-fader{
+      appearance:none;
+      -webkit-appearance:none;
+      width:104px;
+      height:24px;
+      transform:rotate(-90deg);
+      border-radius:999px;
+      background:
+        linear-gradient(90deg, rgba(98,255,175,.72), rgba(57,212,255,.72)),
+        rgba(0,0,0,.32);
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:
+        inset 0 2px 8px rgba(0,0,0,.38),
+        0 8px 14px rgba(0,0,0,.22);
+      cursor:pointer;
     }
 
-    .card h2 {
-      margin: 0;
-      font-size: clamp(1.35rem, 2vw, 2.1rem);
-      letter-spacing: -0.03em;
+    .volume-fader::-webkit-slider-thumb{
+      -webkit-appearance:none;
+      appearance:none;
+      width:22px;
+      height:42px;
+      border-radius:10px;
+      background:linear-gradient(180deg,#ffffff,#9fb3ca);
+      border:1px solid rgba(255,255,255,.7);
+      box-shadow:0 8px 14px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.75);
     }
 
-    .tagline {
-      color: var(--muted);
-      margin-top: 5px;
-      font-size: .96rem;
+    .volume-fader::-moz-range-thumb{
+      width:22px;
+      height:42px;
+      border-radius:10px;
+      background:linear-gradient(180deg,#ffffff,#9fb3ca);
+      border:1px solid rgba(255,255,255,.7);
+      box-shadow:0 8px 14px rgba(0,0,0,.35), inset 0 1px 2px rgba(255,255,255,.75);
     }
 
-    .close {
-      flex: none;
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(255,255,255,.16);
-      border-radius: 15px;
-      background: rgba(255,255,255,.06);
-      color: white;
-      cursor: pointer;
-      font-size: 1.35rem;
+    .volume-fader:focus-visible{
+      outline:3px solid #fff;
+      outline-offset:4px;
     }
 
-    .card-body { padding: 18px 20px 22px; }
-
-    .content-grid {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 16px;
+    .channel-volume-label{
+      margin-top:0;
+      color:#d9e7ff;
+      font-size:.68rem;
+      text-align:center;
     }
 
-    .box {
-      border: 1px solid rgba(255,255,255,.11);
-      border-radius: 20px;
-      padding: 16px;
-      background: rgba(255,255,255,.045);
+    .desk-front{
+      position:absolute;
+      left:8%;
+      right:8%;
+      bottom:-54px;
+      height:64px;
+      border-radius:0 0 30px 30px;
+      background:linear-gradient(180deg,#0d1220,#05080f);
+      box-shadow:0 22px 40px rgba(0,0,0,.45);
+      transform:translateZ(-22px);
+      z-index:-1;
     }
 
-    .box h3 {
-      margin: 0 0 10px;
-      font-size: 1rem;
-      color: #fff;
+    .toast{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%) scale(.96);
+      z-index:50;
+      display:none;
+      width:min(560px, calc(100vw - 36px));
+      padding:24px;
+      border-radius:26px;
+      border:1px solid rgba(255,255,255,.16);
+      background:var(--panelStrong);
+      box-shadow:0 30px 90px rgba(0,0,0,.6);
+      text-align:center;
+    }
+    .toast.active{display:block;animation:pop .28s ease-out}
+    .toast h2{margin:0 0 8px}
+    .toast p{color:var(--muted);line-height:1.5;margin:0 0 16px}
+    @keyframes pop{
+      from{transform:translate(-50%,-50%) scale(.9);opacity:0}
+      to{transform:translate(-50%,-50%) scale(.96);opacity:1}
     }
 
-    .box p, .box li {
-      color: var(--muted);
-      line-height: 1.55;
+
+    .solo:focus-visible{
+      outline:3px solid #ffffff;
+      outline-offset:3px;
     }
 
-    .box p { margin: 0; }
-    .box ul { margin: 0; padding-left: 20px; }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 16px;
+    .channel.active .led:nth-child(2){
+      background:var(--green);
+      box-shadow:0 0 12px var(--green), inset 0 0 4px rgba(255,255,255,.4);
     }
 
-    .btn {
-      border: 1px solid rgba(255,255,255,.16);
-      border-radius: 15px;
-      padding: 11px 14px;
-      background: rgba(255,255,255,.07);
-      color: white;
-      cursor: pointer;
-      transition: transform .18s ease, background .18s ease;
+    .channel-center{
+      gap:8px;
     }
 
-    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,.12); }
-    .btn.primary { background: linear-gradient(135deg, rgba(72,215,255,.36), rgba(255,91,200,.25)); }
-    .btn.success { background: linear-gradient(135deg, rgba(112,255,178,.28), rgba(72,215,255,.2)); }
 
-    .challenge {
-      margin-top: 16px;
-      display: none;
+
+    .welcome-modal{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(57,212,255,.22), transparent 28%),
+        radial-gradient(circle at 80% 20%, rgba(255,79,207,.20), transparent 28%),
+        rgba(0,0,0,.68);
+      backdrop-filter:blur(18px);
     }
 
-    .challenge.active { display: block; }
-
-    .options {
-      display: grid;
-      gap: 10px;
-      margin-top: 12px;
+    .welcome-modal.active{
+      display:flex;
     }
 
-    .option {
-      text-align: left;
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 16px;
-      padding: 12px;
-      background: rgba(255,255,255,.05);
-      color: white;
-      cursor: pointer;
+    .welcome-card{
+      width:min(680px, calc(100vw - 32px));
+      border-radius:32px;
+      padding:30px;
+      border:1px solid rgba(255,255,255,.2);
+      background:
+        linear-gradient(180deg, rgba(12,22,46,.96), rgba(6,11,23,.98));
+      box-shadow:0 34px 110px rgba(0,0,0,.68);
+      text-align:left;
     }
 
-    .option.correct { border-color: rgba(112,255,178,.8); background: rgba(112,255,178,.14); }
-    .option.wrong { border-color: rgba(255,106,122,.8); background: rgba(255,106,122,.13); }
-
-    .feedback {
-      min-height: 24px;
-      margin-top: 10px;
-      color: var(--muted);
+    .welcome-kicker{
+      display:inline-block;
+      margin-bottom:12px;
+      padding:7px 11px;
+      border-radius:999px;
+      border:1px solid rgba(121,236,255,.45);
+      background:rgba(57,212,255,.12);
+      color:#79ecff;
+      font-size:.82rem;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.08em;
     }
 
-    .visualizer {
-      height: 84px;
-      display: flex;
-      align-items: end;
-      gap: 5px;
-      padding: 10px;
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 18px;
-      background: rgba(0,0,0,.24);
-      overflow: hidden;
+    .welcome-card h2{
+      margin:0 0 14px;
+      font-size:clamp(1.9rem, 4vw, 3.1rem);
+      line-height:1;
+      letter-spacing:-.04em;
+      color:#ffffff;
     }
 
-    .bar {
-      flex: 1;
-      min-width: 4px;
-      height: 20%;
-      border-radius: 999px 999px 0 0;
-      background: linear-gradient(to top, var(--cyan), var(--pink));
-      animation: bars .9s ease-in-out infinite alternate;
+    .welcome-card p{
+      margin:0 0 13px;
+      color:#d9e7ff;
+      line-height:1.6;
+      font-size:1.05rem;
     }
 
-    .bar:nth-child(2n) { animation-delay: -.2s; }
-    .bar:nth-child(3n) { animation-delay: -.44s; }
-    .bar:nth-child(5n) { animation-delay: -.7s; }
-
-    @keyframes bars { from { height: 12%; } to { height: var(--h, 88%); } }
-
-    .bottom-tip {
-      position: absolute;
-      left: 50%;
-      bottom: 18px;
-      z-index: 20;
-      transform: translateX(-50%);
-      width: min(820px, calc(100vw - 36px));
-      border-radius: 20px;
-      padding: 12px 14px;
-      border: 1px solid var(--line);
-      background: rgba(8,13,28,.76);
-      backdrop-filter: blur(16px);
-      color: var(--muted);
-      text-align: center;
-      box-shadow: var(--shadow);
+    .welcome-tip{
+      border-left:4px solid #79ecff;
+      padding-left:13px;
+      color:#ffffff !important;
+      background:rgba(255,255,255,.04);
+      border-radius:0 14px 14px 0;
+      padding-top:10px;
+      padding-bottom:10px;
     }
 
-    .toast {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%) scale(.96);
-      z-index: 70;
-      display: none;
-      width: min(560px, calc(100vw - 36px));
-      padding: 22px;
-      border-radius: 26px;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(8,13,28,.96);
-      box-shadow: 0 30px 90px rgba(0,0,0,.6);
-      text-align: center;
+    .welcome-play{
+      width:100%;
+      margin-top:8px;
+      padding:14px 18px;
+      font-size:1.06rem;
+      font-weight:900;
     }
 
-    .toast.active { display: block; animation: pop .28s ease-out; }
-
-    @keyframes pop {
-      from { transform: translate(-50%, -50%) scale(.9); opacity: 0; }
-      to { transform: translate(-50%, -50%) scale(.96); opacity: 1; }
+    .certificate-modal{
+      position:fixed;
+      inset:0;
+      z-index:80;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(0,0,0,.58);
+      backdrop-filter:blur(14px);
     }
 
-    .toast h2 { margin: 0 0 8px; }
-    .toast p { color: var(--muted); margin: 0 0 16px; line-height: 1.5; }
+    .certificate-modal.active{
+      display:flex;
+    }
 
-    @media (max-width: 820px) {
-      .controls { display: none; }
-      .hud { width: calc(100vw - 36px); }
-      .world { width: 980px; height: 600px; top: 58%; }
-      .content-grid { grid-template-columns: 1fr; }
-      .bottom-tip { font-size: .86rem; }
+    .certificate-card{
+      width:min(560px, calc(100vw - 32px));
+      border-radius:28px;
+      padding:24px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(8,13,28,.96);
+      box-shadow:0 30px 90px rgba(0,0,0,.62);
+    }
+
+    .certificate-card h2{
+      margin:0 0 8px;
+      font-size:1.6rem;
+      letter-spacing:-.02em;
+    }
+
+    .certificate-card p{
+      margin:0 0 16px;
+      color:#d9e7ff;
+      line-height:1.5;
+    }
+
+    .certificate-card label{
+      display:block;
+      margin-bottom:8px;
+      color:#ffffff;
+      font-weight:700;
+    }
+
+    .certificate-card input{
+      width:100%;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.08);
+      color:#ffffff;
+      padding:13px 14px;
+      outline:none;
+      font-size:1rem;
+    }
+
+    .certificate-card input:focus{
+      border-color:rgba(57,212,255,.72);
+      box-shadow:0 0 0 3px rgba(57,212,255,.16);
+    }
+
+    .certificate-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .download-certificate{
+      display:none;
+      margin-top:16px;
+      padding:12px 14px;
+      border-radius:16px;
+      text-align:center;
+      color:#06101a;
+      font-weight:900;
+      text-decoration:none;
+      background:linear-gradient(135deg,#62ffaf,#79ecff);
+    }
+
+    .download-certificate.active{
+      display:block;
+    }
+
+    @media (max-width: 1100px){
+      .monitor-body{grid-template-columns:1fr}
+      .screen-stage{width:92%;height:56%}
+      .console{width:98%;height:340px}
+      .channel-row{gap:10px}
+      .topbar{grid-template-columns:1fr}
+      .tools{justify-content:flex-start}
+    }
+
+    @media (max-width: 820px){
+      body{overflow:auto}
+      .app{min-height:1200px;height:auto;overflow:auto}
+      .studio{
+        position:relative;
+        inset:auto;
+        padding:0 12px 40px;
+        display:block;
+      }
+      .rig{
+        width:100%;
+        height:auto;
+        display:block;
+      }
+      .screen-stage{
+        position:relative;
+        width:100%;
+        height:auto;
+        transform:none;
+        left:auto;
+        top:auto;
+      }
+      .screen-shell{
+        position:relative;
+        inset:auto;
+        height:auto;
+        min-height:620px;
+        transform:none;
+      }
+      .monitor-inner{
+        position:relative;
+        inset:auto;
+        min-height:580px;
+      }
+      .screen-stand{display:none}
+      .console{
+        position:relative;
+        width:100%;
+        height:auto;
+        transform:none;
+        left:auto;
+        bottom:auto;
+        margin-top:28px;
+      }
+      .desk{position:relative}
+      .channel-row{
+        position:relative;
+        inset:auto;
+        grid-template-columns:repeat(2,1fr);
+        padding:18px;
+      }
+      .desk-front{display:none}
+      .topbar{
+        position:relative;
+        top:auto;left:auto;right:auto;
+        padding:14px;
+      }
+      .status{grid-template-columns:repeat(2,1fr)}
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="skyline"></div>
     <div class="stars"></div>
 
-    <section class="hud" aria-label="Painel do jogo">
-      <h1>Mesa Sonora 3D</h1>
-      <p>Explore uma mesa de mixagem gigante. Aproxime-se dos murais para estudar como o processo de mixagem se relaciona com habilidades auditivas, cognitivas, técnicas, musicais, performáticas, de aprendizagem e de vida.</p>
-      <div class="status">
-        <div class="chip"><b id="score">0</b><span>pontos</span></div>
-        <div class="chip"><b id="visited">0/7</b><span>murais</span></div>
-        <div class="chip"><b id="zone">Centro</b><span>zona atual</span></div>
+    <audio id="audio-auditivas" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal1.mp3"></audio>
+    <audio id="audio-cognitivas" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal2.mp3"></audio>
+    <audio id="audio-tecnicas" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal3.mp3"></audio>
+    <audio id="audio-musicalidade" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal4.mp3"></audio>
+    <audio id="audio-performance" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal5.mp3"></audio>
+    <audio id="audio-aprendizagem" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal6.mp3"></audio>
+    <audio id="audio-vida" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal7.mp3"></audio>
+
+    <div class="welcome-modal active" id="welcomeModal" aria-modal="true" role="dialog" aria-labelledby="welcomeTitle">
+      <div class="welcome-card">
+        <div class="welcome-kicker">Treinamento interativo</div>
+        <h2 id="welcomeTitle">Percepção Musical e Mixagem</h2>
+        <p>
+          Neste app, cada canal da mesa de som representa um conteúdo sobre a relação entre o processo de mixagem e diferentes habilidades musicais.
+        </p>
+        <p>
+          Antes de ler os textos e responder aos testes, brinque com a mixagem: toque os canais sincronizados e experimente mudar os volumes nos faders. Observe como cada faixa interfere no resultado sonoro geral.
+        </p>
+        <p class="welcome-tip">
+          Depois de explorar a sonoridade, clique nos canais para abrir os conteúdos no monitor e use “Ver teste” para responder às questões.
+        </p>
+        <button type="button" class="btn primary welcome-play" id="welcomePlayBtn">Tocar canais e começar</button>
       </div>
-    </section>
+    </div>
 
-    <section class="controls" aria-label="Controles">
-      <h2>Controles</h2>
-      <div class="controls-grid">
-        <div></div><div class="key"><strong>W / ↑</strong>avançar</div><div></div>
-        <div class="key"><strong>A / ←</strong>esquerda</div><div class="key"><strong>Enter</strong>abrir mural</div><div class="key"><strong>D / →</strong>direita</div>
-        <div></div><div class="key"><strong>S / ↓</strong>recuar</div><div></div>
-      </div>
-      <p style="margin:12px 0 0;color:var(--muted);font-size:.84rem;line-height:1.45">Arraste a cena com o mouse para ajustar a câmera. Em telas touch, toque nos murais para abrir.</p>
-    </section>
-
-    <main class="world-wrap" id="worldWrap" aria-label="Cenário 3D da mesa de mixagem">
-      <div class="world" id="world">
-        <div class="mixer">
-          <div class="mixer-side-left"></div>
-          <div class="mixer-side-right"></div>
-
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-          <div class="channel"><div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div><div class="meter"><i></i></div><div class="fader"></div></div>
-
-          <div class="cables">
-            <div class="cable" style="left:110px;top:365px;width:370px;transform:rotate(18deg)"></div>
-            <div class="cable" style="left:505px;top:210px;width:420px;transform:rotate(-15deg)"></div>
-            <div class="cable" style="left:270px;top:565px;width:470px;transform:rotate(-9deg)"></div>
-            <div class="cable" style="left:720px;top:395px;width:280px;transform:rotate(22deg)"></div>
-          </div>
-
-          <div class="station s-auditivas" data-id="auditivas"><div class="base"></div><div class="mural">Habilidades Auditivas</div><div class="beacon"></div></div>
-          <div class="station s-cognitivas" data-id="cognitivas"><div class="base"></div><div class="mural">Habilidades Cognitivas</div><div class="beacon"></div></div>
-          <div class="station s-tecnicas" data-id="tecnicas"><div class="base"></div><div class="mural">Habilidades Técnicas</div><div class="beacon"></div></div>
-          <div class="station s-musicalidade" data-id="musicalidade"><div class="base"></div><div class="mural">Musicalidade</div><div class="beacon"></div></div>
-          <div class="station s-performance" data-id="performance"><div class="base"></div><div class="mural">Performance</div><div class="beacon"></div></div>
-          <div class="station s-aprendizagem" data-id="aprendizagem"><div class="base"></div><div class="mural">Aprendizagem</div><div class="beacon"></div></div>
-          <div class="station s-vida" data-id="vida"><div class="base"></div><div class="mural">Habilidades de Vida</div><div class="beacon"></div></div>
-
-          <div class="avatar" id="avatar" role="img" aria-label="Jogador"></div>
+    <div class="topbar">
+      <section class="intro glass">
+        <h1>Percepção Musical e Mixagem</h1>
+        <p>Cada canal da mesa representa um conteúdo. Clique em qualquer ponto de um canal para enviar o tema ao monitor principal, onde você poderá ler o conteúdo, ouvir explicações e responder aos testes.</p>
+        <div class="status">
+          <div class="chip"><b id="score">0</b><span>pontos</span></div>
+          <div class="chip"><b id="visited">0/7</b><span>testes respondidos</span></div>
+          <div class="chip"><b id="selectedLabel">Nenhum</b><span>canal ativo</span></div>
+          <div class="chip"><b id="musicState">Parado</b><span>áudio</span></div>
         </div>
-      </div>
-    </main>
 
-    <div class="bottom-tip" id="tip">Use WASD ou setas para caminhar. Chegue perto de um mural e pressione Enter. Você também pode clicar diretamente nos murais.</div>
-  </div>
+        <section class="tools" aria-label="Controles do app">
+          <div class="tool-note">Os sete arquivos de áudio tocam sincronizados. Cada fader controla o volume; EQ, PAN, FX e GAIN alteram o som do canal.</div>
+          <button type="button" class="btn primary" id="musicBtn">Tocar canais</button>
+          <button type="button" class="btn" id="narrateBtn">Ouvir narração</button>
+        </section>
+      </section>
+    </div>
 
-  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-    <article class="card">
-      <header class="card-head">
-        <div>
-          <h2 id="modalTitle">Título</h2>
-          <div class="tagline" id="modalTagline">Descrição</div>
-        </div>
-        <button class="close" id="closeModal" aria-label="Fechar">×</button>
-      </header>
-      <div class="card-body">
-        <div class="content-grid">
-          <div class="box">
-            <h3>Explicação</h3>
-            <p id="modalText"></p>
-          </div>
-          <div class="box">
-            <h3>Escuta ativa</h3>
-            <div class="visualizer" id="visualizer"></div>
-            <div class="actions">
-              <button class="btn primary" id="listenBtn">Ouvir exemplo</button>
-              <button class="btn" id="narrateBtn">Ouvir narração</button>
+    <div class="studio">
+      <div class="rig">
+        <section class="screen-stage">
+          <div class="screen-shell">
+            <div class="monitor-inner">
+              <div class="monitor-header">
+                <div class="monitor-title">
+                  <h2 id="monitorTitle">Selecione um canal</h2>
+                  <p id="monitorTagline">Clique em SOLO em qualquer pista da mesa para exibir o conteúdo aqui.</p>
+                </div>
+                <div class="monitor-badges">
+                  <div class="badge" id="badgeRelation">Correlação: —</div>
+                  <div class="badge" id="badgeCategory">Categoria: —</div>
+                </div>
+              </div>
+
+              <div class="monitor-body">
+                <div class="box">
+                  <h3>Explicação</h3>
+                  <p id="monitorText">O monitor mostrará o conteúdo escolhido, com explicação, pontos-chave e atividade.</p>
+                  <div class="challenge" id="challengeBox">
+                    <h3 id="challengeQuestion">Teste</h3>
+                    <div class="options" id="options"></div>
+                    <div class="feedback" id="feedback"></div>
+                  </div>
+                </div>
+
+                <div class="box">
+                  <h3>Pontos-chave</h3>
+                  <div class="visualizer" id="visualizer"></div>
+                  <ul id="monitorList">
+                    <li>Escolha um canal na mesa.</li>
+                    <li>Leia o conteúdo no monitor.</li>
+                    <li>Ouça a narração e o exemplo sonoro.</li>
+                    <li>Responda ao teste para pontuar.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="monitor-footer">
+                <div class="footer-note" id="footerNote">Pronto para explorar os conteúdos relacionados à mixagem.</div>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                  <button type="button" class="btn success" id="completeBtn">Marcar canal como estudado</button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+          <div class="screen-stand"></div>
+        </section>
 
-        <div class="box" style="margin-top:16px">
-          <h3>Pontos-chave</h3>
-          <ul id="modalList"></ul>
-        </div>
+        <section class="console">
+          <div class="desk">
+            <div class="channel-row">
+              <article class="channel active" data-id="auditivas" role="button" tabindex="0" aria-label="Selecionar canal auditivas">
+                <div class="ch-top">
+                  <div class="ch-label"><b>Habilidades Auditivas</b><span>Canal 1</span></div>
+                  <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
+                </div>
+                <div class="knob-bank">
+                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                </div>
+                <div class="channel-center">
+                  <div class="meter"><div class="meter-fill"></div></div>
+                  <div class="mini-buttons">
+                    <button type="button" class="mini-btn test-open" data-open-test>Ver<br>teste</button>
+                    <div class="mini-btn solo solo-label" aria-hidden="true">Canal</div>
+                  </div>
+                </div>
+                <div class="fader-zone">
+                  <input class="volume-fader" type="range" min="0" max="1" step="0.01" value="0.82" data-volume="auditivas" aria-label="Volume do canal auditivas">
+                  <div class="channel-volume-label" data-volume-label="auditivas">Vol</div>
+                </div>
+              </article>
 
-        <div class="actions">
-          <button class="btn success" id="challengeBtn">Iniciar desafio</button>
-          <button class="btn" id="completeBtn">Marcar como estudado</button>
-        </div>
+              <article class="channel" data-id="cognitivas" role="button" tabindex="0" aria-label="Selecionar canal cognitivas">
+                <div class="ch-top">
+                  <div class="ch-label"><b>Habilidades Cognitivas</b><span>Canal 2</span></div>
+                  <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
+                </div>
+                <div class="knob-bank">
+                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                </div>
+                <div class="channel-center">
+                  <div class="meter"><div class="meter-fill"></div></div>
+                  <div class="mini-buttons">
+                    <button type="button" class="mini-btn test-open" data-open-test>Ver<br>teste</button>
+                    <div class="mini-btn solo solo-label" aria-hidden="true">Canal</div>
+                  </div>
+                </div>
+                <div class="fader-zone">
+                  <input class="volume-fader" type="range" min="0" max="1" step="0.01" value="0.72" data-volume="cognitivas" aria-label="Volume do canal cognitivas">
+                  <div class="channel-volume-label" data-volume-label="cognitivas">Vol</div>
+                </div>
+              </article>
 
-        <section class="challenge box" id="challengeBox" aria-label="Desafio auditivo">
-          <h3 id="challengeQuestion">Desafio</h3>
-          <div class="options" id="options"></div>
-          <div class="feedback" id="feedback"></div>
+              <article class="channel" data-id="tecnicas" role="button" tabindex="0" aria-label="Selecionar canal tecnicas">
+                <div class="ch-top">
+                  <div class="ch-label"><b>Habilidades Técnicas</b><span>Canal 3</span></div>
+                  <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
+                </div>
+                <div class="knob-bank">
+                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                </div>
+                <div class="channel-center">
+                  <div class="meter"><div class="meter-fill"></div></div>
+                  <div class="mini-buttons">
+                    <button type="button" class="mini-btn test-open" data-open-test>Ver<br>teste</button>
+                    <div class="mini-btn solo solo-label" aria-hidden="true">Canal</div>
+                  </div>
+                </div>
+                <div class="fader-zone">
+                  <input class="volume-fader" type="range" min="0" max="1" step="0.01" value="0.76" data-volume="tecnicas" aria-label="Volume do canal tecnicas">
+                  <div class="channel-volume-label" data-volume-label="tecnicas">Vol</div>
+                </div>
+              </article>
+
+              <article class="channel" data-id="musicalidade" role="button" tabindex="0" aria-label="Selecionar canal musicalidade">
+                <div class="ch-top">
+                  <div class="ch-label"><b>Musicalidade</b><span>Canal 4</span></div>
+                  <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
+                </div>
+                <div class="knob-bank">
+                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                </div>
+                <div class="channel-center">
+                  <div class="meter"><div class="meter-fill"></div></div>
+                  <div class="mini-buttons">
+                    <button type="button" class="mini-btn test-open" data-open-test>Ver<br>teste</button>
+                    <div class="mini-btn solo solo-label" aria-hidden="true">Canal</div>
+                  </div>
+                </div>
+                <div class="fader-zone">
+                  <input class="volume-fader" type="range" min="0" max="1" step="0.01" value="0.68" data-volume="musicalidade" aria-label="Volume do canal musicalidade">
+                  <div class="channel-volume-label" data-volume-label="musicalidade">Vol</div>
+                </div>
+              </article>
+
+              <article class="channel" data-id="performance" role="button" tabindex="0" aria-label="Selecionar canal performance">
+                <div class="ch-top">
+                  <div class="ch-label"><b>Performance</b><span>Canal 5</span></div>
+                  <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
+                </div>
+                <div class="knob-bank">
+                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                </div>
+                <div class="channel-center">
+                  <div class="meter"><div class="meter-fill"></div></div>
+                  <div class="mini-buttons">
+                    <button type="button" class="mini-btn test-open" data-open-test>Ver<br>teste</button>
+                    <div class="mini-btn solo solo-label" aria-hidden="true">Canal</div>
+                  </div>
+                </div>
+                <div class="fader-zone">
+                  <input class="volume-fader" type="range" min="0" max="1" step="0.01" value="0.74" data-volume="performance" aria-label="Volume do canal performance">
+                  <div class="channel-volume-label" data-volume-label="performance">Vol</div>
+                </div>
+              </article>
+
+              <article class="channel" data-id="aprendizagem" role="button" tabindex="0" aria-label="Selecionar canal aprendizagem">
+                <div class="ch-top">
+                  <div class="ch-label"><b>Aprendizagem</b><span>Canal 6</span></div>
+                  <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
+                </div>
+                <div class="knob-bank">
+                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                </div>
+                <div class="channel-center">
+                  <div class="meter"><div class="meter-fill"></div></div>
+                  <div class="mini-buttons">
+                    <button type="button" class="mini-btn test-open" data-open-test>Ver<br>teste</button>
+                    <div class="mini-btn solo solo-label" aria-hidden="true">Canal</div>
+                  </div>
+                </div>
+                <div class="fader-zone">
+                  <input class="volume-fader" type="range" min="0" max="1" step="0.01" value="0.70" data-volume="aprendizagem" aria-label="Volume do canal aprendizagem">
+                  <div class="channel-volume-label" data-volume-label="aprendizagem">Vol</div>
+                </div>
+              </article>
+
+              <article class="channel" data-id="vida" role="button" tabindex="0" aria-label="Selecionar canal vida">
+                <div class="ch-top">
+                  <div class="ch-label"><b>Habilidades de Vida</b><span>Canal 7</span></div>
+                  <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
+                </div>
+                <div class="knob-bank">
+                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
+                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                </div>
+                <div class="channel-center">
+                  <div class="meter"><div class="meter-fill"></div></div>
+                  <div class="mini-buttons">
+                    <button type="button" class="mini-btn test-open" data-open-test>Ver<br>teste</button>
+                    <div class="mini-btn solo solo-label" aria-hidden="true">Canal</div>
+                  </div>
+                </div>
+                <div class="fader-zone">
+                  <input class="volume-fader" type="range" min="0" max="1" step="0.01" value="0.78" data-volume="vida" aria-label="Volume do canal vida">
+                  <div class="channel-volume-label" data-volume-label="vida">Vol</div>
+                </div>
+              </article>
+            </div>
+            <div class="desk-front"></div>
+          </div>
         </section>
       </div>
-    </article>
-  </div>
+    </div>
 
-  <div class="toast" id="toast">
-    <h2>Exploração concluída!</h2>
-    <p>Você explorou todos os murais da Mesa Sonora 3D. Agora você conhece diferentes formas pelas quais o processo de mixagem pode se relacionar com habilidades musicais, cognitivas, performáticas, sociais e de aprendizagem.</p>
-    <button class="btn primary" onclick="document.getElementById('toast').classList.remove('active')">Continuar explorando</button>
+    <div class="certificate-modal" id="certificateModal" aria-hidden="true">
+      <div class="certificate-card">
+        <h2>Treinamento concluído</h2>
+        <p>Você respondeu todos os testes. Digite seu nome completo para gerar o certificado de conclusão.</p>
+        <label for="studentName">Nome completo</label>
+        <input id="studentName" type="text" placeholder="Digite seu nome completo" autocomplete="name">
+        <div class="certificate-actions">
+          <button type="button" class="btn primary" id="generateCertificateBtn">Gerar certificado</button>
+          <button type="button" class="btn" id="closeCertificateBtn">Fechar</button>
+        </div>
+        <a id="downloadCertificate" class="download-certificate" download="certificado-percepcao-musical-e-mixagem.png">Baixar certificado</a>
+        <canvas id="certificateCanvas" width="1600" height="1100" style="display:none"></canvas>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -947,6 +1388,8 @@
         title: '1. Habilidades Auditivas',
         tagline: 'Precisão rítmica, entonação, imaginação sonora e improvisação no processo de mixagem.',
         text: 'As habilidades auditivas se relacionam com a mixagem porque o processo exige escuta ativa, precisão rítmica, percepção de afinação e capacidade de imaginar a sonoridade final de uma peça. Algumas relações são diretas, como a precisão rítmica e a previsão de como a música vai soar; outras são indiretas, como boa entonação e improvisação.',
+        category: 'Habilidades auditivas',
+        relation: 'Predomínio de relações diretas e indiretas',
         points: [
           'Precisão rítmica e sensação de pulso — correlação direta: importante para marcação do andamento e ajustes de delays.',
           'Boa entonação — correlação indireta: a escuta ativa durante a mixagem favorece a observação da afinação.',
@@ -966,6 +1409,8 @@
         title: '2. Habilidades Cognitivas',
         tagline: 'Leitura, tonalidade, harmonia, forma, memória, composição e compreensão de estilos.',
         text: 'As habilidades cognitivas aparecem na mixagem quando o músico utiliza a DAW, configura elementos de teoria musical, reconhece a forma da música, memoriza elementos sonoros e compreende estilos musicais em seus contextos culturais e históricos.',
+        category: 'Habilidades cognitivas',
+        relation: 'Diretas e indiretas conforme a habilidade',
         points: [
           'Leitura de música — correlação direta: a DAW pode exigir ajustes de grade, figuras musicais, andamento, compassos e armaduras de clave.',
           'Transposição, tonalidades e harmonia — correlação indireta: relacionadas ao uso de elementos da teoria musical na mixagem.',
@@ -986,6 +1431,8 @@
         title: '3. Habilidades Técnicas',
         tagline: 'Instrumento, articulação, expressividade sonora e aprendizagem pela escuta ativa.',
         text: 'As habilidades técnicas se relacionam com a mixagem principalmente pela escuta ativa de performances e pelo uso de processamentos sonoros que podem alterar articulação, expressividade e qualidade do som. Algumas habilidades específicas do instrumento são desenvolvidas indiretamente; agilidade técnica, neste quadro, não apresenta correlação.',
+        category: 'Habilidades técnicas',
+        relation: 'Mistura de correlações indiretas, diretas e nenhuma',
         points: [
           'Habilidades específicas do instrumento — correlação indireta: ouvir ativamente execuções pode gerar aprendizagem útil para futuras performances.',
           'Agilidade técnica — nenhuma correlação indicada.',
@@ -1005,6 +1452,8 @@
         title: '4. Habilidades de Musicalidade',
         tagline: 'Expressividade, projeção sonora, controle do desenvolvimento e transmissão de significados.',
         text: 'A musicalidade se relaciona com a mixagem porque o ato de mixar envolve decisões expressivas. A pessoa que mixa pode compreender elementos expressivos, monitorar sua evolução ao comparar mixagens anteriores e transmitir significados por meio da cena sonora construída.',
+        category: 'Musicalidade',
+        relation: 'Predomínio de correlações indiretas e uma direta central',
         points: [
           'Tocar expressivamente — correlação indireta: a escuta ativa pode revelar elementos expressivos aplicáveis à performance.',
           'Projetar o som — correlação indireta: também pode ser desenvolvido pela compreensão de elementos expressivos na mixagem.',
@@ -1024,6 +1473,8 @@
         title: '5. Habilidades de Performance',
         tagline: 'Comunicação com audiência, artistas, grupos e plateia no contexto da mixagem.',
         text: 'As habilidades de performance aparecem na mixagem porque o músico se comunica com uma audiência e com outros artistas. Com os meios digitais e fóruns de compartilhamento, a mixagem passa a ser também uma forma de apresentação, diálogo e interação artística.',
+        category: 'Performance',
+        relation: 'Direta em comunicação; indireta em coordenação de grupo',
         points: [
           'Comunicar-se com uma audiência — correlação direta: a mixagem comunica uma proposta sonora à plateia.',
           'Comunicação com outros artistas — correlação direta: fóruns e repositórios de mixagem permitem diálogo com outros mixadores.',
@@ -1043,6 +1494,8 @@
         title: '6. Habilidades de Aprendizagem',
         tagline: 'Aprender, monitorar e avaliar o próprio progresso por meio de histórico de mixagens.',
         text: 'A mixagem pode desenvolver a capacidade de aprender, monitorar e avaliar o progresso independentemente. A realização sistemática de mixagens, postagens e comparações permite criar um histórico de produções e observar a própria evolução.',
+        category: 'Aprendizagem',
+        relation: 'Direta',
         points: [
           'Aprender independentemente — correlação direta: a prática sistemática de mixagem favorece autonomia.',
           'Monitorar o progresso — correlação direta: comparar mixagens ao longo do tempo permite perceber evolução.',
@@ -1062,6 +1515,8 @@
         title: '7. Habilidades de Vida',
         tagline: 'Habilidades sociais, organização e gerenciamento do tempo no trabalho com mixagem.',
         text: 'As habilidades de vida se conectam à atuação profissional do mixador. O processo pode envolver interação com músicos, produtores, público e outros profissionais. Habilidades sociais têm correlação direta; gerenciamento do tempo aparece como indireto; planejamento e habilidades organizacionais, neste quadro, não apresentam correlação.',
+        category: 'Habilidades de vida',
+        relation: 'Direta, indireta e nenhuma, conforme o aspecto',
         points: [
           'Habilidades sociais — correlação direta: o mixador lida com músicos, promotores, público e outros profissionais.',
           'Planejamento e habilidades organizacionais — nenhuma correlação indicada no quadro.',
@@ -1079,221 +1534,179 @@
       }
     };
 
-    const avatar = document.getElementById('avatar');
-    const world = document.getElementById('world');
-    const modal = document.getElementById('modal');
     const scoreEl = document.getElementById('score');
     const visitedEl = document.getElementById('visited');
-    const zoneEl = document.getElementById('zone');
-    const tip = document.getElementById('tip');
-    const toast = document.getElementById('toast');
+    const selectedLabelEl = document.getElementById('selectedLabel');
+    const musicStateEl = document.getElementById('musicState');
 
-    let player = { x: 560, y: 342 };
-    let keys = {};
+    const monitorTitle = document.getElementById('monitorTitle');
+    const monitorTagline = document.getElementById('monitorTagline');
+    const monitorText = document.getElementById('monitorText');
+    const monitorList = document.getElementById('monitorList');
+    const footerNote = document.getElementById('footerNote');
+    const badgeRelation = document.getElementById('badgeRelation');
+    const badgeCategory = document.getElementById('badgeCategory');
+
+    const challengeBox = document.getElementById('challengeBox');
+    const challengeQuestion = document.getElementById('challengeQuestion');
+    const optionsEl = document.getElementById('options');
+    const feedbackEl = document.getElementById('feedback');
+
+    const narrateBtn = document.getElementById('narrateBtn');
+    const completeBtn = document.getElementById('completeBtn');
+    const musicBtn = document.getElementById('musicBtn');
+    const certificateModal = document.getElementById('certificateModal');
+    const studentNameInput = document.getElementById('studentName');
+    const generateCertificateBtn = document.getElementById('generateCertificateBtn');
+    const closeCertificateBtn = document.getElementById('closeCertificateBtn');
+    const downloadCertificate = document.getElementById('downloadCertificate');
+    const certificateCanvas = document.getElementById('certificateCanvas');
+    const welcomeModal = document.getElementById('welcomeModal');
+    const welcomePlayBtn = document.getElementById('welcomePlayBtn');
+
+    let currentId = 'auditivas';
     let score = 0;
     let visited = new Set();
-    let currentStation = null;
-    let activeId = null;
+    let answeredCorrect = new Set();
+    let answeredQuestions = new Set();
+    let completedStudy = new Set();
     let audioCtx = null;
-    let camera = { rz: -8, ty: 25 };
-
-    let currentChallengeOptions = [];
+    let musicOn = false;
     let currentCorrectIndex = null;
 
-    function shuffleArray(arr) {
+    const channelIds = ['auditivas','cognitivas','tecnicas','musicalidade','performance','aprendizagem','vida'];
+    const channelAudio = {
+      auditivas: document.getElementById('audio-auditivas'),
+      cognitivas: document.getElementById('audio-cognitivas'),
+      tecnicas: document.getElementById('audio-tecnicas'),
+      musicalidade: document.getElementById('audio-musicalidade'),
+      performance: document.getElementById('audio-performance'),
+      aprendizagem: document.getElementById('audio-aprendizagem'),
+      vida: document.getElementById('audio-vida')
+    };
+
+    const channelNodes = {};
+    let vuAnimation = null;
+
+    const channelControlState = {};
+    channelIds.forEach(id => {
+      channelControlState[id] = { eq: 0, pan: 0, fx: 0, gain: 0 };
+    });
+
+    function makeBars(){
+      const visualizer = document.getElementById('visualizer');
+      visualizer.innerHTML = '';
+      for(let i=0;i<28;i++){
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        bar.style.setProperty('--h', (25 + Math.random() * 70) + '%');
+        visualizer.appendChild(bar);
+      }
+    }
+
+    function shuffleArray(arr){
       const copy = [...arr];
-      for (let i = copy.length - 1; i > 0; i--) {
+      for(let i = copy.length - 1; i > 0; i--){
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
       }
       return copy;
     }
 
-    function prepareChallenge(challenge) {
-      const options = challenge.options.map((text, index) => ({ text, originalIndex: index }));
-      const shuffled = shuffleArray(options);
-      currentChallengeOptions = shuffled;
-      currentCorrectIndex = shuffled.findIndex(opt => opt.originalIndex === challenge.answer);
-      return shuffled;
-    }
-
-    function makeBars() {
-      const visualizer = document.getElementById('visualizer');
-      visualizer.innerHTML = '';
-      for (let i = 0; i < 28; i++) {
-        const b = document.createElement('div');
-        b.className = 'bar';
-        b.style.setProperty('--h', (25 + Math.random() * 70) + '%');
-        visualizer.appendChild(b);
-      }
-    }
-
-    function updatePlayer() {
-      avatar.style.left = player.x + 'px';
-      avatar.style.top = player.y + 'px';
-      detectStation();
-    }
-
-    function cleanTitle(title) {
-      const pos = title.indexOf(' ');
-      return pos >= 0 ? title.substring(pos + 1) : title;
-    }
-
-    function detectStation() {
-      let nearest = null;
-      let nearestDist = Infinity;
-
-      document.querySelectorAll('.station').forEach(st => {
-        const rect = { x: st.offsetLeft + st.offsetWidth / 2, y: st.offsetTop + st.offsetHeight / 2 };
-        const d = Math.hypot(player.x - rect.x, player.y - rect.y);
-        if (d < nearestDist) {
-          nearestDist = d;
-          nearest = st;
-        }
-      });
-
-      if (nearest && nearestDist < 120) {
-        currentStation = nearest.dataset.id;
-        zoneEl.textContent = cleanTitle(data[currentStation].title).split(' ')[0];
-        tip.textContent = 'Você está perto de: ' + data[currentStation].title + '. Pressione Enter para abrir o mural.';
-      } else {
-        currentStation = null;
-        zoneEl.textContent = 'Mesa';
-        tip.textContent = 'Caminhe pela mesa de mixagem. Aproxime-se dos murais luminosos e pressione Enter.';
-      }
-    }
-
-    function loop() {
-      const speed = keys.shift ? 5.2 : 3.2;
-
-      if (keys.w || keys.arrowup) player.y -= speed;
-      if (keys.s || keys.arrowdown) player.y += speed;
-      if (keys.a || keys.arrowleft) player.x -= speed;
-      if (keys.d || keys.arrowright) player.x += speed;
-
-      player.x = Math.max(32, Math.min(1110, player.x));
-      player.y = Math.max(36, Math.min(650, player.y));
-
-      updatePlayer();
-      requestAnimationFrame(loop);
-    }
-
-    window.addEventListener('keydown', e => {
-      const k = e.key.toLowerCase();
-      keys[k] = true;
-
-      if (k === 'enter' && currentStation) openStation(currentStation);
-      if (k === 'escape') closeModal();
-    });
-
-    window.addEventListener('keyup', e => {
-      keys[e.key.toLowerCase()] = false;
-    });
-
-    document.querySelectorAll('.station').forEach(st => {
-      st.addEventListener('click', () => openStation(st.dataset.id));
-    });
-
-    function openStation(stationId) {
-      activeId = stationId;
-      const item = data[activeId];
-
-      document.getElementById('modalTitle').textContent = item.title;
-      document.getElementById('modalTagline').textContent = item.tagline;
-      document.getElementById('modalText').textContent = item.text;
-      document.getElementById('modalList').innerHTML = item.points.map(p => '<li>' + p + '</li>').join('');
-
-      document.getElementById('challengeBox').classList.remove('active');
-      document.getElementById('feedback').textContent = '';
-      document.getElementById('challengeQuestion').textContent = item.challenge.question;
-
-      const shuffledOptions = prepareChallenge(item.challenge);
-      document.getElementById('options').innerHTML = shuffledOptions
-        .map((opt, i) => '<button class="option" data-index="' + i + '">' + opt.text + '</button>')
-        .join('');
-
-      document.querySelectorAll('.option').forEach(btn => {
-        btn.addEventListener('click', answerChallenge);
-      });
-
-      makeBars();
-      modal.classList.add('active');
-      markVisited(stationId, false);
-    }
-
-    function closeModal() {
-      modal.classList.remove('active');
-      if ('speechSynthesis' in window) speechSynthesis.cancel();
-    }
-
-    document.getElementById('closeModal').addEventListener('click', closeModal);
-
-    modal.addEventListener('click', e => {
-      if (e.target === modal) closeModal();
-    });
-
-    function markVisited(stationId, withScore = true) {
-      if (!visited.has(stationId)) {
-        visited.add(stationId);
-        document.querySelector('.station[data-id="' + stationId + '"]').classList.add('done');
-        if (withScore) score += 10;
-        updateStats();
-      }
-    }
-
-    function updateStats() {
+    function updateStats(){
       scoreEl.textContent = score;
-      visitedEl.textContent = visited.size + '/7';
-
-      if (visited.size === 7) {
-        setTimeout(() => toast.classList.add('active'), 450);
-      }
+      visitedEl.textContent = answeredQuestions.size + '/7';
+      selectedLabelEl.textContent = data[currentId].title.replace(/^\d+\.\s*/, '');
+      // O certificado é liberado quando todos os testes forem respondidos.
     }
 
-    document.getElementById('completeBtn').addEventListener('click', () => {
-      if (!activeId) return;
-      markVisited(activeId, true);
-      document.getElementById('feedback').textContent = 'Mural marcado como estudado. Continue explorando a mesa.';
-    });
+    function setActiveChannel(id){
+      currentId = id;
+      document.querySelectorAll('.channel').forEach(ch => ch.classList.toggle('active', ch.dataset.id === id));
+      const item = data[id];
 
-    document.getElementById('challengeBtn').addEventListener('click', () => {
-      document.getElementById('challengeBox').classList.add('active');
-      document.getElementById('feedback').textContent = 'Escolha a melhor resposta. As alternativas são embaralhadas a cada abertura do mural.';
-    });
+      monitorTitle.textContent = item.title;
+      monitorTagline.textContent = item.tagline;
+      monitorText.textContent = item.text;
+      monitorList.innerHTML = item.points.map(p => '<li>' + p + '</li>').join('');
+      badgeRelation.textContent = 'Correlação: ' + item.relation;
+      badgeCategory.textContent = 'Categoria: ' + item.category;
+      footerNote.textContent = 'Canal ativo: ' + item.title + '. Use o fader do canal para controlar seu volume. Clique em outro canal para trocar o conteúdo.';
+      challengeBox.classList.remove('active');
+      feedbackEl.textContent = '';
+      optionsEl.innerHTML = '';
+      visited.add(id);
+      updateStats();
+      makeBars();
+    }
 
-    function answerChallenge(e) {
-      const btn = e.currentTarget;
-      const selected = Number(btn.dataset.index);
-      const item = data[activeId];
+    function openChallenge(){
+      const item = data[currentId];
+      const shuffled = shuffleArray(item.challenge.options.map((text, index) => ({text, originalIndex:index})));
+      currentCorrectIndex = shuffled.findIndex(opt => opt.originalIndex === item.challenge.answer);
+
+      challengeQuestion.textContent = item.challenge.question;
+      optionsEl.innerHTML = shuffled.map((opt, i) => '<button class="option" data-index="' + i + '">' + opt.text + '</button>').join('');
+      challengeBox.classList.add('active');
+      feedbackEl.textContent = 'Escolha a melhor resposta. As alternativas são embaralhadas a cada abertura do teste.';
+      document.querySelectorAll('.option').forEach(btn => btn.addEventListener('click', answerChallenge));
+    }
+
+    function answerChallenge(e){
+      const selected = Number(e.currentTarget.dataset.index);
+      const item = data[currentId];
+      const firstAnswerForThisChannel = !answeredQuestions.has(currentId);
+      answeredQuestions.add(currentId);
 
       document.querySelectorAll('.option').forEach(o => {
         o.disabled = true;
-        if (Number(o.dataset.index) === currentCorrectIndex) {
+        if(Number(o.dataset.index) === currentCorrectIndex){
           o.classList.add('correct');
         }
       });
 
-      if (selected === currentCorrectIndex) {
-        btn.classList.add('correct');
-        score += 20;
-        markVisited(activeId, false);
-        document.getElementById('feedback').textContent = item.challenge.success + ' +20 pontos.';
+      if(selected === currentCorrectIndex){
+        e.currentTarget.classList.add('correct');
+        if(!answeredCorrect.has(currentId)){
+          answeredCorrect.add(currentId);
+          score += 20;
+        }
+        feedbackEl.textContent = item.challenge.success + ' +20 pontos.';
         playSuccess();
       } else {
-        btn.classList.add('wrong');
-        document.getElementById('feedback').textContent = 'Quase. Observe a resposta destacada e tente relacioná-la ao conceito do mural.';
+        e.currentTarget.classList.add('wrong');
+        feedbackEl.textContent = 'Resposta registrada. Observe a alternativa correta destacada e relacione-a ao conteúdo exibido no monitor.';
         playTone(180, .12, 'sawtooth', 0);
       }
 
       updateStats();
+
+      if(firstAnswerForThisChannel && answeredQuestions.size === 7){
+        setTimeout(openCertificateModal, 500);
+      }
     }
 
-    function getAudio() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function completeCurrent(){
+      visited.add(currentId);
+      if(!completedStudy.has(currentId)){
+        completedStudy.add(currentId);
+        score += 10;
+        feedbackEl.textContent = 'Canal marcado como estudado. Você ganhou +10 pontos.';
+      } else {
+        feedbackEl.textContent = 'Este canal já foi marcado como estudado.';
+      }
+      updateStats();
+
+      // O certificado depende da resposta aos 7 testes, mesmo que haja erros.
+    }
+
+    function getAudio(){
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
       return audioCtx;
     }
 
-    function playTone(freq, duration = .35, type = 'sine', pan = 0) {
+    function playTone(freq, duration=.35, type='sine', pan=0){
       const ctx = getAudio();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -1301,29 +1714,23 @@
 
       osc.type = type;
       osc.frequency.value = freq;
-
       gain.gain.setValueAtTime(0.0001, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + .03);
       gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
 
-      if (panner) {
+      if(panner){
         panner.pan.value = pan;
-        osc.connect(gain);
-        gain.connect(panner);
-        panner.connect(ctx.destination);
+        osc.connect(gain); gain.connect(panner); panner.connect(ctx.destination);
       } else {
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        osc.connect(gain); gain.connect(ctx.destination);
       }
 
       osc.start();
       osc.stop(ctx.currentTime + duration + .03);
     }
 
-    function playExample() {
-      if (!activeId) return;
-
-      const item = data[activeId];
+    function playExample(){
+      const item = data[currentId];
       const seqs = {
         auditivas: [{f:220,p:0},{f:220,p:0},{f:330,p:0},{f:220,p:0}],
         cognitivas: [{f:262,p:-.15},{f:330,p:0},{f:392,p:.15},{f:523,p:0}],
@@ -1334,70 +1741,478 @@
         vida: [{f:220,p:-.35},{f:277,p:0},{f:330,p:.35},{f:440,p:0}]
       };
 
-      (seqs[activeId] || seqs.auditivas).forEach((n, i) => {
+      (seqs[currentId] || seqs.auditivas).forEach((n, i) => {
         setTimeout(() => playTone(n.f, .28, item.wave, n.p), i * 260);
       });
     }
 
-    function playSuccess() {
+    function playSuccess(){
       [392, 494, 587, 784].forEach((f, i) => {
         setTimeout(() => playTone(f, .18, 'sine', 0), i * 120);
       });
     }
 
-    document.getElementById('listenBtn').addEventListener('click', playExample);
-
-    document.getElementById('narrateBtn').addEventListener('click', () => {
-      if (!activeId || !('speechSynthesis' in window)) {
-        document.getElementById('feedback').textContent = 'Narração não disponível neste navegador.';
+    function narrate(){
+      if(!('speechSynthesis' in window)){
+        footerNote.textContent = 'Narração não disponível neste navegador.';
         return;
       }
-
       speechSynthesis.cancel();
-
-      const item = data[activeId];
+      const item = data[currentId];
       const msg = new SpeechSynthesisUtterance(item.title + '. ' + item.text);
       msg.lang = 'pt-BR';
       msg.rate = .95;
       speechSynthesis.speak(msg);
+    }
+
+    function initChannelAudioGraph(){
+      const ctx = getAudio();
+
+      channelIds.forEach(id => {
+        if(channelNodes[id]) return;
+
+        const source = ctx.createMediaElementSource(channelAudio[id]);
+
+        const eq = ctx.createBiquadFilter();
+        eq.type = 'peaking';
+        eq.frequency.value = 1800;
+        eq.Q.value = 0.85;
+        eq.gain.value = 0;
+
+        const preGain = ctx.createGain();
+        preGain.gain.value = 1;
+
+        const dryGain = ctx.createGain();
+        dryGain.gain.value = 1;
+
+        const delay = ctx.createDelay(1.0);
+        delay.delayTime.value = 0.22;
+
+        const feedback = ctx.createGain();
+        feedback.gain.value = 0.18;
+
+        const wetGain = ctx.createGain();
+        wetGain.gain.value = 0;
+
+        const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+
+        const faderGain = ctx.createGain();
+        faderGain.gain.value = 1;
+
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 2048;
+        analyser.smoothingTimeConstant = 0.55;
+
+        source.connect(eq);
+        eq.connect(preGain);
+
+        preGain.connect(dryGain);
+        preGain.connect(delay);
+        delay.connect(feedback);
+        feedback.connect(delay);
+        delay.connect(wetGain);
+
+        if(pan){
+          dryGain.connect(pan);
+          wetGain.connect(pan);
+          pan.connect(faderGain);
+        } else {
+          dryGain.connect(faderGain);
+          wetGain.connect(faderGain);
+        }
+
+        faderGain.connect(analyser);
+        analyser.connect(ctx.destination);
+
+        channelAudio[id].volume = 1;
+
+        channelNodes[id] = {
+          source,
+          eq,
+          preGain,
+          dryGain,
+          delay,
+          feedback,
+          wetGain,
+          pan,
+          faderGain,
+          analyser,
+          data: new Uint8Array(analyser.fftSize),
+          meter: document.querySelector('.channel[data-id="' + id + '"] .meter-fill')
+        };
+      });
+
+      applyAudioControls();
+    }
+
+    function applyAudioControls(){
+      const ctx = getAudio();
+
+      channelIds.forEach(id => {
+        const node = channelNodes[id];
+        if(!node) return;
+
+        const state = channelControlState[id];
+
+        const eqGain = state.eq * 9;             // -9 dB a +9 dB
+        const panValue = state.pan;              // -1 a +1
+        const fxAmount = Math.max(0, state.fx);  // 0 a 1
+        const gainAmount = Math.pow(10, (state.gain * 9) / 20); // -9 dB a +9 dB
+
+        node.eq.gain.setTargetAtTime(eqGain, ctx.currentTime, 0.02);
+        node.preGain.gain.setTargetAtTime(gainAmount, ctx.currentTime, 0.02);
+        node.wetGain.gain.setTargetAtTime(fxAmount * 0.55, ctx.currentTime, 0.02);
+        node.dryGain.gain.setTargetAtTime(1 - fxAmount * 0.22, ctx.currentTime, 0.02);
+
+        if(node.pan){
+          node.pan.pan.setTargetAtTime(panValue, ctx.currentTime, 0.02);
+        }
+      });
+    }
+
+    function cycleAudioControl(channelId, control){
+      const state = channelControlState[channelId];
+      if(!state) return;
+
+      if(control === 'pan'){
+        const values = [-1, -0.5, 0, 0.5, 1];
+        const currentIndex = values.indexOf(state.pan);
+        state.pan = values[(currentIndex + 1 + values.length) % values.length];
+      } else {
+        const values = [-1, -0.5, 0, 0.5, 1];
+        const currentIndex = values.indexOf(state[control]);
+        state[control] = values[(currentIndex + 1 + values.length) % values.length];
+      }
+
+      updateControlUI(channelId);
+      if(channelNodes[channelId]) applyAudioControls();
+    }
+
+    function updateControlUI(channelId){
+      const state = channelControlState[channelId];
+      const channel = document.querySelector('.channel[data-id="' + channelId + '"]');
+      if(!state || !channel) return;
+
+      channel.querySelectorAll('.audio-control').forEach(button => {
+        const control = button.dataset.control;
+        const value = state[control];
+        const knob = button.querySelector('.knob');
+        const label = button.querySelector('span');
+
+        if(knob){
+          knob.style.setProperty('--rot', (value * 135) + 'deg');
+        }
+
+        if(label){
+          if(control === 'pan'){
+            const panText = value === 0 ? 'C' : value < 0 ? 'L' + Math.round(Math.abs(value) * 100) : 'R' + Math.round(value * 100);
+            label.textContent = 'PAN ' + panText;
+          } else {
+            const sign = value > 0 ? '+' : '';
+            label.textContent = control.toUpperCase() + ' ' + sign + Math.round(value * 100);
+          }
+        }
+      });
+    }
+
+    channelIds.forEach(updateControlUI);
+
+    function applyFaderVolumes(){
+      document.querySelectorAll('.volume-fader').forEach(fader => {
+        const id = fader.dataset.volume;
+        const value = Number(fader.value);
+
+        if(channelNodes[id]){
+          channelNodes[id].gain.gain.setTargetAtTime(value, getAudio().currentTime, 0.015);
+        } else if(channelAudio[id]){
+          channelAudio[id].volume = value;
+        }
+
+        const label = document.querySelector('[data-volume-label="' + id + '"]');
+        if(label) label.textContent = 'Vol ' + Math.round(value * 100) + '%';
+      });
+    }
+
+    function startVuMeters(){
+      if(vuAnimation) cancelAnimationFrame(vuAnimation);
+
+      const draw = () => {
+        channelIds.forEach(id => {
+          const node = channelNodes[id];
+          if(!node || !node.meter) return;
+
+          node.analyser.getByteTimeDomainData(node.data);
+
+          let sum = 0;
+          for(let i = 0; i < node.data.length; i++){
+            const normalized = (node.data[i] - 128) / 128;
+            sum += normalized * normalized;
+          }
+
+          const rms = Math.sqrt(sum / node.data.length);
+          const dbScaled = Math.min(1, Math.max(0, Math.pow(rms * 7.5, 0.72)));
+          const height = 3 + dbScaled * 97;
+
+          node.meter.style.height = height.toFixed(1) + '%';
+        });
+
+        vuAnimation = requestAnimationFrame(draw);
+      };
+
+      draw();
+    }
+
+    async function playAllChannelsFromStart(){
+      initChannelAudioGraph();
+      applyFaderVolumes();
+      startVuMeters();
+
+      channelIds.forEach(id => {
+        const audio = channelAudio[id];
+        audio.pause();
+        audio.currentTime = 0;
+      });
+
+      try{
+        await Promise.all(channelIds.map(id => channelAudio[id].play()));
+        musicOn = true;
+        musicBtn.textContent = 'Pausar canais';
+        musicStateEl.textContent = 'Tocando';
+        footerNote.textContent = 'Sete canais tocando sincronizados. Brinque com os faders para experimentar a mixagem antes de fazer os testes.';
+      } catch(err){
+        channelIds.forEach(id => channelAudio[id].pause());
+        musicOn = false;
+        musicBtn.textContent = 'Tocar canais';
+        musicStateEl.textContent = 'Parado';
+        footerNote.textContent = 'O navegador bloqueou o áudio. Clique novamente em "Tocar canais" para liberar a reprodução.';
+      }
+    }
+
+    function pauseAllChannels(){
+      channelIds.forEach(id => {
+        channelAudio[id].pause();
+        const meter = document.querySelector('.channel[data-id="' + id + '"] .meter-fill');
+        if(meter) meter.style.height = '2%';
+      });
+      musicOn = false;
+      musicBtn.textContent = 'Tocar canais';
+      musicStateEl.textContent = 'Pausado';
+      footerNote.textContent = 'Canais pausados. Clique em "Tocar canais" para reiniciar todos sincronizados.';
+    }
+
+    async function toggleMusic(){
+      if(!musicOn){
+        await playAllChannelsFromStart();
+      } else {
+        pauseAllChannels();
+      }
+    }
+
+    async function startFromWelcome(){
+      await playAllChannelsFromStart();
+      welcomeModal.classList.remove('active');
+      welcomeModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function openCertificateModal(){
+      certificateModal.classList.add('active');
+      certificateModal.setAttribute('aria-hidden', 'false');
+      downloadCertificate.classList.remove('active');
+      downloadCertificate.removeAttribute('href');
+      setTimeout(() => studentNameInput.focus(), 80);
+    }
+
+    function closeCertificateModal(){
+      certificateModal.classList.remove('active');
+      certificateModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function generateCertificate(){
+      const name = studentNameInput.value.trim();
+      if(!name){
+        studentNameInput.focus();
+        studentNameInput.placeholder = 'Informe seu nome completo para gerar o certificado';
+        return;
+      }
+
+      const ctx = certificateCanvas.getContext('2d');
+      const w = certificateCanvas.width;
+      const h = certificateCanvas.height;
+      const now = new Date();
+      const dateText = now.toLocaleDateString('pt-BR');
+      const timeText = now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+      const grd = ctx.createLinearGradient(0,0,w,h);
+      grd.addColorStop(0, '#071124');
+      grd.addColorStop(.48, '#101b38');
+      grd.addColorStop(1, '#050814');
+      ctx.fillStyle = grd;
+      ctx.fillRect(0,0,w,h);
+
+      ctx.strokeStyle = '#79ecff';
+      ctx.lineWidth = 16;
+      ctx.strokeRect(70,70,w-140,h-140);
+
+      ctx.strokeStyle = 'rgba(255,255,255,.28)';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(105,105,w-210,h-210);
+
+      ctx.fillStyle = 'rgba(57,212,255,.12)';
+      ctx.beginPath();
+      ctx.arc(220,180,140,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.fillStyle = 'rgba(255,79,207,.10)';
+      ctx.beginPath();
+      ctx.arc(w-220,h-190,180,0,Math.PI*2);
+      ctx.fill();
+
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 58px Arial, sans-serif';
+      ctx.fillText('CERTIFICADO DE CONCLUSÃO', w/2, 220);
+
+      ctx.fillStyle = '#79ecff';
+      ctx.font = '700 34px Arial, sans-serif';
+      ctx.fillText('Percepção Musical e Mixagem', w/2, 295);
+
+      ctx.fillStyle = '#d9e7ff';
+      ctx.font = '32px Arial, sans-serif';
+      ctx.fillText('Certificamos que', w/2, 405);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 62px Arial, sans-serif';
+      const nameEndY = wrapCanvasText(ctx, name, w/2, 500, 1220, 74);
+
+      ctx.fillStyle = '#d9e7ff';
+      ctx.font = '31px Arial, sans-serif';
+      const conclusionEndY = wrapCanvasText(
+        ctx,
+        'concluiu o treinamento "Percepção Musical e Mixagem", oferecido pelo prof. Dr. Glauber Santiago — DAC/UFSCar.',
+        w/2,
+        nameEndY + 48,
+        1180,
+        44
+      );
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '28px Arial, sans-serif';
+      ctx.fillText('Data e horário de emissão: ' + dateText + ' às ' + timeText, w/2, conclusionEndY + 72);
+
+      const correctCount = answeredCorrect.size;
+      const percent = Math.round((correctCount / 7) * 100);
+      const grade = ((correctCount / 7) * 10).toFixed(1).replace('.', ',');
+
+      ctx.fillStyle = '#79ecff';
+      ctx.font = '700 30px Arial, sans-serif';
+      ctx.fillText('Desempenho: ' + percent + '% de acertos — nota ' + grade + ' de 10', w/2, conclusionEndY + 122);
+
+      ctx.strokeStyle = 'rgba(255,255,255,.45)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w/2 - 260, 870);
+      ctx.lineTo(w/2 + 260, 870);
+      ctx.stroke();
+
+      ctx.fillStyle = '#d9e7ff';
+      ctx.font = '24px Arial, sans-serif';
+      ctx.fillText('Prof. Dr. Glauber Santiago', w/2, 913);
+      ctx.fillText('DAC/UFSCar', w/2, 947);
+
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      ctx.font = '18px Arial, sans-serif';
+      ctx.fillText('Certificado gerado automaticamente pelo app Percepção Musical e Mixagem.', w/2, h - 145);
+
+      const dataUrl = certificateCanvas.toDataURL('image/png');
+      downloadCertificate.href = dataUrl;
+      downloadCertificate.download = 'certificado-percepcao-musical-e-mixagem-' + name.toLowerCase().replace(/\s+/g,'-').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9-]/g,'') + '.png';
+      downloadCertificate.classList.add('active');
+      downloadCertificate.textContent = 'Baixar certificado em imagem';
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+      const words = text.split(' ');
+      let line = '';
+      for(let n = 0; n < words.length; n++){
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if(metrics.width > maxWidth && n > 0){
+          ctx.fillText(line.trim(), x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, y);
+      return y;
+    }
+
+    document.addEventListener('click', function(event){
+      const controlButton = event.target.closest('.audio-control[data-control]');
+      if(controlButton){
+        const channel = controlButton.closest('.channel[data-id]');
+        if(channel){
+          event.preventDefault();
+          event.stopPropagation();
+          initChannelAudioGraph();
+          cycleAudioControl(channel.dataset.id, controlButton.dataset.control);
+        }
+        return;
+      }
+
+      const testButton = event.target.closest('[data-open-test]');
+      if(testButton){
+        const channel = testButton.closest('.channel[data-id]');
+        if(channel){
+          event.preventDefault();
+          event.stopPropagation();
+          setActiveChannel(channel.dataset.id);
+          openChallenge();
+        }
+        return;
+      }
+
+      const channel = event.target.closest('.channel[data-id]');
+      if(!channel) return;
+
+      // Permite usar fader sem trocar o canal por acidente.
+      if(event.target.matches('input[type="range"]')) return;
+
+      setActiveChannel(channel.dataset.id);
     });
 
-    let dragging = false;
-    let lastX = 0;
-    let lastY = 0;
-    const wrap = document.getElementById('worldWrap');
+    document.addEventListener('keydown', function(event){
+      const channel = event.target.closest && event.target.closest('.channel[data-id]');
+      if(!channel) return;
+      if(event.target.matches('input, button, textarea, select')) return;
+      if(event.key === 'Enter' || event.key === ' '){
+        event.preventDefault();
+        setActiveChannel(channel.dataset.id);
+      }
+    });
+    completeBtn.addEventListener('click', completeCurrent);
+    narrateBtn.addEventListener('click', narrate);
+    musicBtn.addEventListener('click', toggleMusic);
+    welcomePlayBtn.addEventListener('click', startFromWelcome);
+    generateCertificateBtn.addEventListener('click', generateCertificate);
+    closeCertificateBtn.addEventListener('click', closeCertificateModal);
 
-    wrap.addEventListener('pointerdown', e => {
-      dragging = true;
-      lastX = e.clientX;
-      lastY = e.clientY;
-      wrap.setPointerCapture(e.pointerId);
+    document.querySelectorAll('.volume-fader').forEach(fader => {
+      fader.addEventListener('input', applyFaderVolumes);
     });
 
-    wrap.addEventListener('pointermove', e => {
-      if (!dragging) return;
-
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-
-      lastX = e.clientX;
-      lastY = e.clientY;
-
-      camera.rz += dx * .04;
-      camera.ty += dy * .18;
-      camera.ty = Math.max(-45, Math.min(80, camera.ty));
-
-      world.style.setProperty('--rz', camera.rz + 'deg');
-      world.style.setProperty('--ty', camera.ty + 'px');
-    });
-
-    wrap.addEventListener('pointerup', () => dragging = false);
-    wrap.addEventListener('pointercancel', () => dragging = false);
+    applyFaderVolumes();
 
     makeBars();
-    updateStats();
-    updatePlayer();
-    loop();
+    setActiveChannel('auditivas');
+
+    window.addEventListener('load', () => {
+      applyFaderVolumes();
+      musicOn = false;
+      musicBtn.textContent = 'Tocar canais';
+      musicStateEl.textContent = 'Parado';
+    });
   </script>
 </body>
 </html>
