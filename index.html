@@ -590,30 +590,9 @@
       place-items:center;
       gap:5px;
     }
-
-    .audio-control{
-      border:0;
-      padding:0;
-      background:transparent;
-      color:inherit;
-      cursor:pointer;
-      border-radius:14px;
-    }
-
-    .audio-control:focus-visible{
-      outline:3px solid #fff;
-      outline-offset:3px;
-    }
-
-    .audio-control:hover .knob{
-      filter:brightness(1.12);
-      transform:rotate(var(--rot, 0deg)) translateY(-1px);
-    }
     .knob{
       width:34px;
       height:34px;
-      transform:rotate(var(--rot, 0deg));
-      transition:transform .18s ease, filter .18s ease;
       border-radius:50%;
       position:relative;
       background:
@@ -636,13 +615,10 @@
       transform:translateX(-50%);
     }
     .knob-wrap span{
-      color:#d9e7ff;
-      font-size:.62rem;
+      color:var(--muted);
+      font-size:.65rem;
       text-transform:uppercase;
-      letter-spacing:.06em;
-      font-weight:800;
-      text-align:center;
-      line-height:1.05;
+      letter-spacing:.08em;
     }
 
     .meter{
@@ -938,15 +914,6 @@
       font-weight:900;
     }
 
-    .welcome-audio-note{
-      margin-top:10px;
-      color:#d9e7ff;
-      font-size:.93rem;
-      line-height:1.4;
-      text-align:center;
-    }
-
-
     .certificate-modal{
       position:fixed;
       inset:0;
@@ -1104,13 +1071,13 @@
   <div class="app">
     <div class="stars"></div>
 
-    <audio id="audio-auditivas" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal1.mp3"></audio>
-    <audio id="audio-cognitivas" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal2.mp3"></audio>
-    <audio id="audio-tecnicas" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal3.mp3"></audio>
-    <audio id="audio-musicalidade" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal4.mp3"></audio>
-    <audio id="audio-performance" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal5.mp3"></audio>
-    <audio id="audio-aprendizagem" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal6.mp3"></audio>
-    <audio id="audio-vida" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal7.mp3"></audio>
+    <audio id="audio-auditivas" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal1.mp3"></audio>
+    <audio id="audio-cognitivas" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal2.mp3"></audio>
+    <audio id="audio-tecnicas" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal3.mp3"></audio>
+    <audio id="audio-musicalidade" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal4.mp3"></audio>
+    <audio id="audio-performance" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal5.mp3"></audio>
+    <audio id="audio-aprendizagem" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal6.mp3"></audio>
+    <audio id="audio-vida" crossorigin="anonymous" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/mixagem-e-percepcao-musical/refs/heads/main/canal7.mp3"></audio>
 
     <div class="welcome-modal active" id="welcomeModal" aria-modal="true" role="dialog" aria-labelledby="welcomeTitle">
       <div class="welcome-card">
@@ -1123,10 +1090,9 @@
           Antes de ler os textos e responder aos testes, brinque com a mixagem: toque os canais sincronizados e experimente mudar os volumes nos faders. Observe como cada faixa interfere no resultado sonoro geral.
         </p>
         <p class="welcome-tip">
-          Depois que os canais começarem a tocar, explore a sonoridade, clique nos canais para abrir os conteúdos no monitor e use “Ver teste” para responder às questões.
+          Depois de explorar a sonoridade, clique nos canais para abrir os conteúdos no monitor e use “Ver teste” para responder às questões.
         </p>
-        <button type="button" class="btn primary welcome-play" id="welcomePlayBtn">Começar e tocar canais</button>
-        <div class="welcome-audio-note" id="welcomeAudioNote">Os canais começarão a tocar ao clicar. Se a rede ainda estiver carregando os MP3, aguarde alguns segundos e clique novamente.</div>
+        <button type="button" class="btn primary welcome-play" id="welcomePlayBtn">Tocar canais e começar</button>
       </div>
     </div>
 
@@ -1142,7 +1108,7 @@
         </div>
 
         <section class="tools" aria-label="Controles do app">
-          <div class="tool-note">Os sete arquivos de áudio tocam sincronizados. Cada fader controla o volume; EQ, PAN, FX e GAIN alteram o som do canal.</div>
+          <div class="tool-note">Os sete arquivos de áudio tocam sincronizados. Cada fader controla o volume do canal correspondente.</div>
           <button type="button" class="btn primary" id="musicBtn">Tocar canais</button>
           <button type="button" class="btn" id="narrateBtn">Ouvir narração</button>
         </section>
@@ -1208,10 +1174,10 @@
                   <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
                 </div>
                 <div class="knob-bank">
-                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                  <div class="knob-wrap"><div class="knob"></div><span>EQ</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Pan</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>FX</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Gain</span></div>
                 </div>
                 <div class="channel-center">
                   <div class="meter"><div class="meter-fill"></div></div>
@@ -1232,10 +1198,10 @@
                   <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
                 </div>
                 <div class="knob-bank">
-                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                  <div class="knob-wrap"><div class="knob"></div><span>EQ</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Pan</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>FX</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Gain</span></div>
                 </div>
                 <div class="channel-center">
                   <div class="meter"><div class="meter-fill"></div></div>
@@ -1256,10 +1222,10 @@
                   <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
                 </div>
                 <div class="knob-bank">
-                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                  <div class="knob-wrap"><div class="knob"></div><span>EQ</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Pan</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>FX</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Gain</span></div>
                 </div>
                 <div class="channel-center">
                   <div class="meter"><div class="meter-fill"></div></div>
@@ -1280,10 +1246,10 @@
                   <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
                 </div>
                 <div class="knob-bank">
-                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                  <div class="knob-wrap"><div class="knob"></div><span>EQ</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Pan</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>FX</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Gain</span></div>
                 </div>
                 <div class="channel-center">
                   <div class="meter"><div class="meter-fill"></div></div>
@@ -1304,10 +1270,10 @@
                   <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
                 </div>
                 <div class="knob-bank">
-                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                  <div class="knob-wrap"><div class="knob"></div><span>EQ</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Pan</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>FX</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Gain</span></div>
                 </div>
                 <div class="channel-center">
                   <div class="meter"><div class="meter-fill"></div></div>
@@ -1328,10 +1294,10 @@
                   <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
                 </div>
                 <div class="knob-bank">
-                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                  <div class="knob-wrap"><div class="knob"></div><span>EQ</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Pan</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>FX</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Gain</span></div>
                 </div>
                 <div class="channel-center">
                   <div class="meter"><div class="meter-fill"></div></div>
@@ -1352,10 +1318,10 @@
                   <div class="tiny-leds"><span class="led on"></span><span class="led"></span></div>
                 </div>
                 <div class="knob-bank">
-                  <button type="button" class="knob-wrap audio-control" data-control="eq"><div class="knob" style="--rot:0deg"></div><span>EQ 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="pan"><div class="knob" style="--rot:0deg"></div><span>PAN C</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="fx"><div class="knob" style="--rot:0deg"></div><span>FX 0</span></button>
-                  <button type="button" class="knob-wrap audio-control" data-control="gain"><div class="knob" style="--rot:0deg"></div><span>GAIN 0</span></button>
+                  <div class="knob-wrap"><div class="knob"></div><span>EQ</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Pan</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>FX</span></div>
+                  <div class="knob-wrap"><div class="knob"></div><span>Gain</span></div>
                 </div>
                 <div class="channel-center">
                   <div class="meter"><div class="meter-fill"></div></div>
@@ -1597,12 +1563,6 @@
 
     const channelNodes = {};
     let vuAnimation = null;
-    let useFallbackVu = false;
-
-    const channelControlState = {};
-    channelIds.forEach(id => {
-      channelControlState[id] = { eq: 0, pan: 0, fx: 0, gain: 0 };
-    });
 
     function makeBars(){
       const visualizer = document.getElementById('visualizer');
@@ -1782,170 +1742,38 @@
       channelIds.forEach(id => {
         if(channelNodes[id]) return;
 
-        let source;
-        try{
-          source = ctx.createMediaElementSource(channelAudio[id]);
-        } catch(err){
-          // Se o navegador bloquear análise CORS/WebAudio, mantém a reprodução e usa VU visual de segurança.
-          useFallbackVu = true;
-          return;
-        }
-
-        const eq = ctx.createBiquadFilter();
-        eq.type = 'peaking';
-        eq.frequency.value = 1800;
-        eq.Q.value = 0.85;
-        eq.gain.value = 0;
-
-        const preGain = ctx.createGain();
-        preGain.gain.value = 1;
-
-        const dryGain = ctx.createGain();
-        dryGain.gain.value = 1;
-
-        const delay = ctx.createDelay(1.0);
-        delay.delayTime.value = 0.22;
-
-        const feedback = ctx.createGain();
-        feedback.gain.value = 0.18;
-
-        const wetGain = ctx.createGain();
-        wetGain.gain.value = 0;
-
-        const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-
-        const faderGain = ctx.createGain();
-        faderGain.gain.value = 1;
-
+        const source = ctx.createMediaElementSource(channelAudio[id]);
+        const gain = ctx.createGain();
         const analyser = ctx.createAnalyser();
-        analyser.fftSize = 2048;
-        analyser.smoothingTimeConstant = 0.55;
 
-        source.connect(eq);
-        eq.connect(preGain);
+        analyser.fftSize = 1024;
+        analyser.smoothingTimeConstant = 0.72;
 
-        preGain.connect(dryGain);
-        preGain.connect(delay);
-        delay.connect(feedback);
-        feedback.connect(delay);
-        delay.connect(wetGain);
-
-        if(pan){
-          dryGain.connect(pan);
-          wetGain.connect(pan);
-          pan.connect(faderGain);
-        } else {
-          dryGain.connect(faderGain);
-          wetGain.connect(faderGain);
-        }
-
-        faderGain.connect(analyser);
+        source.connect(gain);
+        gain.connect(analyser);
         analyser.connect(ctx.destination);
 
         channelAudio[id].volume = 1;
 
         channelNodes[id] = {
           source,
-          eq,
-          preGain,
-          dryGain,
-          delay,
-          feedback,
-          wetGain,
-          pan,
-          faderGain,
+          gain,
           analyser,
           data: new Uint8Array(analyser.fftSize),
           meter: document.querySelector('.channel[data-id="' + id + '"] .meter-fill')
         };
       });
-
-      applyAudioControls();
     }
-
-    function applyAudioControls(){
-      const ctx = getAudio();
-
-      channelIds.forEach(id => {
-        const node = channelNodes[id];
-        if(!node || !node.eq || !node.preGain) return;
-
-        const state = channelControlState[id];
-
-        const eqGain = state.eq * 9;             // -9 dB a +9 dB
-        const panValue = state.pan;              // -1 a +1
-        const fxAmount = Math.max(0, state.fx);  // 0 a 1
-        const gainAmount = Math.pow(10, (state.gain * 9) / 20); // -9 dB a +9 dB
-
-        node.eq.gain.setTargetAtTime(eqGain, ctx.currentTime, 0.02);
-        node.preGain.gain.setTargetAtTime(gainAmount, ctx.currentTime, 0.02);
-        node.wetGain.gain.setTargetAtTime(fxAmount * 0.55, ctx.currentTime, 0.02);
-        node.dryGain.gain.setTargetAtTime(1 - fxAmount * 0.22, ctx.currentTime, 0.02);
-
-        if(node.pan){
-          node.pan.pan.setTargetAtTime(panValue, ctx.currentTime, 0.02);
-        }
-      });
-    }
-
-    function cycleAudioControl(channelId, control){
-      const state = channelControlState[channelId];
-      if(!state) return;
-
-      if(control === 'pan'){
-        const values = [-1, -0.5, 0, 0.5, 1];
-        const currentIndex = values.indexOf(state.pan);
-        state.pan = values[(currentIndex + 1 + values.length) % values.length];
-      } else {
-        const values = [-1, -0.5, 0, 0.5, 1];
-        const currentIndex = values.indexOf(state[control]);
-        state[control] = values[(currentIndex + 1 + values.length) % values.length];
-      }
-
-      updateControlUI(channelId);
-      if(channelNodes[channelId]) applyAudioControls();
-    }
-
-    function updateControlUI(channelId){
-      const state = channelControlState[channelId];
-      const channel = document.querySelector('.channel[data-id="' + channelId + '"]');
-      if(!state || !channel) return;
-
-      channel.querySelectorAll('.audio-control').forEach(button => {
-        const control = button.dataset.control;
-        const value = state[control];
-        const knob = button.querySelector('.knob');
-        const label = button.querySelector('span');
-
-        if(knob){
-          knob.style.setProperty('--rot', (value * 135) + 'deg');
-        }
-
-        if(label){
-          if(control === 'pan'){
-            const panText = value === 0 ? 'C' : value < 0 ? 'L' + Math.round(Math.abs(value) * 100) : 'R' + Math.round(value * 100);
-            label.textContent = 'PAN ' + panText;
-          } else {
-            const sign = value > 0 ? '+' : '';
-            label.textContent = control.toUpperCase() + ' ' + sign + Math.round(value * 100);
-          }
-        }
-      });
-    }
-
-    channelIds.forEach(updateControlUI);
 
     function applyFaderVolumes(){
       document.querySelectorAll('.volume-fader').forEach(fader => {
         const id = fader.dataset.volume;
         const value = Number(fader.value);
 
-        if(channelAudio[id]){
+        if(channelNodes[id]){
+          channelNodes[id].gain.gain.setTargetAtTime(value, getAudio().currentTime, 0.015);
+        } else if(channelAudio[id]){
           channelAudio[id].volume = value;
-        }
-
-        if(channelNodes[id] && channelNodes[id].faderGain){
-          channelNodes[id].faderGain.gain.setTargetAtTime(value, getAudio().currentTime, 0.015);
         }
 
         const label = document.querySelector('[data-volume-label="' + id + '"]');
@@ -1959,19 +1787,7 @@
       const draw = () => {
         channelIds.forEach(id => {
           const node = channelNodes[id];
-          const meter = node && node.meter ? node.meter : document.querySelector('.channel[data-id="' + id + '"] .meter-fill');
-
-          if(!meter) return;
-
-          if(!node || !node.analyser || !node.data || useFallbackVu){
-            const audio = channelAudio[id];
-            const fader = document.querySelector('.volume-fader[data-volume="' + id + '"]');
-            const volume = fader ? Number(fader.value) : 0.7;
-            const moving = audio && !audio.paused ? (0.35 + Math.random() * 0.65) : 0;
-            const height = 3 + (moving * volume) * 97;
-            meter.style.height = height.toFixed(1) + '%';
-            return;
-          }
+          if(!node || !node.meter) return;
 
           node.analyser.getByteTimeDomainData(node.data);
 
@@ -1982,10 +1798,10 @@
           }
 
           const rms = Math.sqrt(sum / node.data.length);
-          const dbScaled = Math.min(1, Math.max(0, Math.pow(rms * 7.5, 0.72)));
-          const height = 3 + dbScaled * 97;
+          const dbScaled = Math.min(1, Math.max(0, rms * 4.2));
+          const height = 2 + dbScaled * 96;
 
-          meter.style.height = height.toFixed(1) + '%';
+          node.meter.style.height = height.toFixed(1) + '%';
         });
 
         vuAnimation = requestAnimationFrame(draw);
@@ -1995,33 +1811,18 @@
     }
 
     async function playAllChannelsFromStart(){
-      useFallbackVu = false;
+      initChannelAudioGraph();
+      applyFaderVolumes();
+      startVuMeters();
 
       channelIds.forEach(id => {
         const audio = channelAudio[id];
         audio.pause();
-        try { audio.currentTime = 0; } catch(err) {}
+        audio.currentTime = 0;
       });
 
-      applyFaderVolumes();
-
       try{
-        await Promise.all(channelIds.map(id => {
-          const audio = channelAudio[id];
-          audio.load();
-          return audio.play();
-        }));
-
-        // Tenta ativar WebAudio/VU real depois que a reprodução já começou.
-        try{
-          initChannelAudioGraph();
-          applyFaderVolumes();
-        } catch(err){
-          useFallbackVu = true;
-        }
-
-        startVuMeters();
-
+        await Promise.all(channelIds.map(id => channelAudio[id].play()));
         musicOn = true;
         musicBtn.textContent = 'Pausar canais';
         musicStateEl.textContent = 'Tocando';
@@ -2031,11 +1832,8 @@
         musicOn = false;
         musicBtn.textContent = 'Tocar canais';
         musicStateEl.textContent = 'Parado';
-        footerNote.textContent = 'Algum áudio ainda não carregou. Aguarde alguns segundos e clique novamente em “Começar e tocar canais”.';
-        return false;
+        footerNote.textContent = 'O navegador bloqueou o áudio. Clique novamente em "Tocar canais" para liberar a reprodução.';
       }
-
-      return true;
     }
 
     function pauseAllChannels(){
@@ -2059,23 +1857,9 @@
     }
 
     async function startFromWelcome(){
-      welcomePlayBtn.disabled = true;
-      welcomePlayBtn.textContent = 'Carregando e iniciando canais...';
-
-      const started = await playAllChannelsFromStart();
-
-      if(started){
-        welcomeModal.classList.remove('active');
-        welcomeModal.setAttribute('aria-hidden', 'true');
-      } else {
-        const note = document.getElementById('welcomeAudioNote');
-        if(note){
-          note.textContent = 'Não foi possível iniciar os canais ainda. Verifique a conexão e clique novamente em “Começar e tocar canais”.';
-        }
-      }
-
-      welcomePlayBtn.disabled = false;
-      welcomePlayBtn.textContent = 'Começar e tocar canais';
+      await playAllChannelsFromStart();
+      welcomeModal.classList.remove('active');
+      welcomeModal.setAttribute('aria-hidden', 'true');
     }
 
     function openCertificateModal(){
@@ -2163,29 +1947,25 @@
       ctx.font = '28px Arial, sans-serif';
       ctx.fillText('Data e horário de emissão: ' + dateText + ' às ' + timeText, w/2, conclusionEndY + 72);
 
-      const correctCount = answeredCorrect.size;
-      const percent = Math.round((correctCount / 7) * 100);
-      const grade = ((correctCount / 7) * 10).toFixed(1).replace('.', ',');
-
       ctx.fillStyle = '#79ecff';
       ctx.font = '700 30px Arial, sans-serif';
-      ctx.fillText('Desempenho: ' + percent + '% de acertos — nota ' + grade + ' de 10', w/2, conclusionEndY + 122);
+      ctx.fillText('Pontuação obtida: ' + score + ' pontos', w/2, conclusionEndY + 122);
 
       ctx.strokeStyle = 'rgba(255,255,255,.45)';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(w/2 - 260, 870);
-      ctx.lineTo(w/2 + 260, 870);
+      ctx.moveTo(w/2 - 260, 905);
+      ctx.lineTo(w/2 + 260, 905);
       ctx.stroke();
 
       ctx.fillStyle = '#d9e7ff';
       ctx.font = '24px Arial, sans-serif';
-      ctx.fillText('Prof. Dr. Glauber Santiago', w/2, 913);
-      ctx.fillText('DAC/UFSCar', w/2, 947);
+      ctx.fillText('Prof. Dr. Glauber Santiago', w/2, 948);
+      ctx.fillText('DAC/UFSCar', w/2, 982);
 
       ctx.fillStyle = 'rgba(255,255,255,.55)';
       ctx.font = '18px Arial, sans-serif';
-      ctx.fillText('Certificado gerado automaticamente pelo app Percepção Musical e Mixagem.', w/2, h - 145);
+      ctx.fillText('Certificado gerado automaticamente pelo app Percepção Musical e Mixagem.', w/2, h - 105);
 
       const dataUrl = certificateCanvas.toDataURL('image/png');
       downloadCertificate.href = dataUrl;
@@ -2213,18 +1993,6 @@
     }
 
     document.addEventListener('click', function(event){
-      const controlButton = event.target.closest('.audio-control[data-control]');
-      if(controlButton){
-        const channel = controlButton.closest('.channel[data-id]');
-        if(channel){
-          event.preventDefault();
-          event.stopPropagation();
-          initChannelAudioGraph();
-          cycleAudioControl(channel.dataset.id, controlButton.dataset.control);
-        }
-        return;
-      }
-
       const testButton = event.target.closest('[data-open-test]');
       if(testButton){
         const channel = testButton.closest('.channel[data-id]');
